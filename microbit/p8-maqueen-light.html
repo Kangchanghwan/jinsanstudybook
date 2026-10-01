@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>빛을 따라오는 마퀸 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c8">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <div class="page-head">
+      <h1>8. 빛을 따라오는 마퀸</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 1단계">★☆☆</span>
+        <span class="tag">빛 센서</span>
+        <span class="tag">만약~아니면</span>
+        <span class="tag">센서값을 속도로</span>
+      </p>
+      <p>손전등을 비추면 밝을수록 빠르게 따라오고, 어두우면 멈추는 로봇</p>
+    </div>
+
+    <!-- ===== 1단계 소개 ===== -->
+    <section class="step" id="s1" data-title="소개">
+      <p class="step-lead">이 단계에서는 <strong>무엇을 만드는지</strong> 영상으로 보고, 준비물을 확인합니다.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>무엇을 만드나요?</h2>
+            <p>손전등을 비추면 따라오고, 어두우면 멈추는 로봇입니다. 센서를 따로 달지 않아도 됩니다.
+               micro:bit의 <strong>5×5 LED 화면이 빛 센서 역할</strong>을 하기 때문입니다.</p>
+            <p>모터 속도 칸에 숫자 대신 <strong>빛 밝기</strong> 블록을 끼워 넣어 <strong>"밝을수록 빠르게"</strong> 만드는 것이 핵심입니다.
+               블록 수가 적어 7번보다 쉽지만, "센서값을 그대로 속도로 쓴다"는 새로운 생각이 들어 있어요.</p>
+          </section>
+          <section class="box box--demo">
+            <h2>먼저 볼까요? 손전등을 따라오는 마퀸</h2>
+            <figure class="demo">
+              <video controls preload="none" poster="videos/maqueen-light.jpg" src="videos/maqueen-light.mp4"></video>
+              <figcaption>동작 영상 (약 28초) · 출처: 아이씨뱅큐(icbanq) 네이버 블로그 "Maqueen 본격적으로 사용하기 3부"</figcaption>
+            </figure>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>영상을 보며 생각해 보기</h2>
+            <ul>
+              <li>마퀸은 무엇으로 빛을 느낄까? 센서가 어디에 붙어 있을까?</li>
+              <li>손전등을 가까이 하면 빨라질까, 느려질까?</li>
+              <li>빛을 끄면 어떻게 될까?</li>
+            </ul>
+          </section>
+          <section class="box">
+            <h2>준비물 (모둠당)</h2>
+            <ul>
+              <li>micro:bit + 마퀸(Maqueen) 본체, AA 건전지 3개</li>
+              <li>micro USB 케이블, 인터넷이 되는 PC</li>
+              <li>손전등 또는 스마트폰 플래시</li>
+              <li>확장: <strong>DFRobot_MaqueenPlus_v20</strong> (추가 방법은 <a href="p7-maqueen-police.html#s3">7번 프로젝트 3단계</a> 참고)</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2단계 원리 ===== -->
+    <section class="step" id="s2" data-title="원리">
+      <p class="step-lead">이 단계에서는 <strong>빛 센서가 어디에 있고 어떤 값을 주는지</strong> 직접 재 봅니다.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>빛 센서는 어디에 있을까?</h2>
+            <p>micro:bit의 5×5 LED는 <strong>빛을 내기도 하고 빛을 받아들이기도</strong> 합니다.
+               주변 밝기를 <strong>0(어둠) ~ 255(아주 밝음)</strong> 값으로 알려 줍니다.</p>
+            <ul>
+              <li>블록: <strong>입력 → 빛 밝기</strong> (확장 설치 필요 없음)</li>
+              <li>손전등을 화면에 비추면 값이 커지고, 손으로 가리면 작아져요.</li>
+              <li>값이 곧 <strong>속도</strong>가 됩니다. 마퀸 모터 속도도 0~255 범위라서 딱 맞아요.</li>
+            </ul>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>워밍업: 교실 밝기 재 보기</h2>
+            <ol class="steps">
+              <li><strong>무한반복 안에 숫자 출력 [빛 밝기]</strong>
+                기본 → 숫자 출력, 입력 → 빛 밝기.</li>
+              <li><strong>다운로드해서 확인</strong>
+                교실에서 보통 얼마가 나오나요? 손전등을 비추면? 손으로 가리면?</li>
+              <li><strong>기준값 정하기</strong>
+                "교실 값보다 크고 손전등 값보다 작은 숫자"를 기준값으로 씁니다. 보통 190 정도.</li>
+            </ol>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3단계 블록 코드 ===== -->
+    <section class="step" id="s3" data-title="블록 코드">
+      <p class="step-lead">이 단계에서는 블록 코드를 보고 <strong>만약~아니면</strong> 하나로 완성합니다. 블록은 5개뿐이에요.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>블록 코드</h2>
+            <div class="mc" data-share="S66493-09121-68110-39479" data-name="빛을 따라오는 마퀸">
+              <div class="mc-tabs">
+                <span class="mc-label">블록 코드<span class="sub">보기 전용</span></span>
+                <span class="mc-spacer"></span>
+                <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+              </div>
+              <div class="mc-frame">
+                <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S66493-09121-68110-39479" title="빛을 따라오는 마퀸 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+              </div>
+              <p class="mc-tip">이 화면은 보기 전용입니다. 블록을 보고 내 프로젝트에서 직접 조립하세요. 속도 칸에 <strong>빛 밝기</strong> 블록이 들어간 것을 잘 보세요.</p>
+              <figure class="shot print-only">
+                <img src="images/maqueen-light.jpg" loading="lazy"
+                     alt="빛을 따라오는 마퀸 블록 코드. 무한반복 안에서 빛 밝기가 190보다 크면 모든 모터 방향 전진 속도를 빛 밝기로 설정하고, 아니면 모든 모터 방향 전진 속도를 0으로 설정한다.">
+                <figcaption>인쇄용 블록 코드 그림</figcaption>
+              </figure>
+            </div>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>만드는 순서</h2>
+            <ol class="steps">
+              <li><strong>만약 ~ 이면 / 아니면</strong>
+                무한반복 안에 <strong>만약</strong> 블록을 넣고 (+) 버튼을 눌러 <strong>아니면</strong>을 추가합니다.</li>
+              <li><strong>밝으면 빛의 세기만큼 전진</strong>
+                조건에 <strong>빛 밝기 &gt; 190</strong>. 안에는 <strong>모든 모터 방향 전진 속도 [빛 밝기]</strong>.
+                속도 칸의 숫자를 빼고 보라색 <strong>빛 밝기</strong> 블록을 끼워 넣는 것이 포인트!
+                값이 200이면 속도 200, 250이면 속도 250 → 밝을수록 빨라요.</li>
+              <li><strong>어두우면 정지</strong>
+                아니면에는 <strong>모든 모터 방향 전진 속도 0</strong>. 190 이하일 때 실행됩니다.</li>
+              <li><strong>테스트</strong>
+                다운로드 → 마퀸 전원 ON → 조명을 조금 어둡게 한 뒤 손전등을 <strong>micro:bit 화면</strong>에 비추며 앞으로 이동. 빛을 끄면 멈추면 성공!</li>
+            </ol>
+            <p style="margin-top:12px"><strong>블록 찾는 곳</strong> — 논리 → 만약~이면/아니면, 비교(&gt;) | 입력 → 빛 밝기 | MaqueenPlusV2&amp;V3 → 모터 블록</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4단계 테스트 ===== -->
+    <section class="step" id="s4" data-title="테스트 · 막힐 때">
+      <p class="step-lead">이 단계에서는 마퀸에 올려 <strong>동작을 확인</strong>하고, 잘 안 될 때 고칠 곳을 찾습니다.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>사용법 · 성공 기준</h2>
+            <table class="controls">
+              <tbody>
+                <tr><th>밝다 (값이 큼)</th><td>빠르게 전진</td></tr>
+                <tr><th>조금 밝다</th><td>천천히 전진</td></tr>
+                <tr><th>어둡다 (190 이하)</th><td>정지</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:12px">손전등을 화면 <strong>바로 위</strong>에서 비추다가 조금씩 멀어져 보세요. 마퀸이 따라오면 성공입니다.</p>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box box--note">
+            <h2>막힐 때</h2>
+            <p><strong>빛을 꺼도 계속 달려요.</strong><br>
+               교실이 밝아 값이 늘 190을 넘는 것입니다. 기준값을 <strong>220~230</strong>으로 올리세요.</p>
+            <p><strong>비춰도 안 움직여요.</strong><br>
+               기준값을 150 정도로 낮추세요. 손전등을 <strong>화면(LED 쪽)</strong>에 비추고 있나요?</p>
+            <p><strong>너무 느려요.</strong><br>
+               속도 칸에 "빛 밝기 × 1.5"처럼 곱하기 블록을 써 보세요.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5단계 도전 ===== -->
+    <section class="step" id="s5" data-title="도전 과제">
+      <p class="step-lead">완성했다면 <strong>부호 하나, 블록 하나</strong>만 바꿔 다른 로봇으로 만들어 보세요.</p>
+
+      <section class="box box--full">
+        <h2>도전 과제</h2>
+        <div class="challenges">
+          <div><strong>빛을 피하는 마퀸</strong>&gt; 를 &lt; 로 바꾸면? 어두울 때만 달려요 (바퀴벌레 로봇!)</div>
+          <div><strong>밝기 표시</strong>달리면서 "숫자 출력 빛 밝기"로 밝기를 보여 주기.</div>
+          <div><strong>경광등 합치기</strong><a href="p7-maqueen-police.html#s5">7번 코드 ②</a>의 RGB LED 코드를 넣어 빛을 따라가는 경찰차로!</div>
+          <div><strong>방향 바꾸기</strong>왼쪽·오른쪽 모터 속도를 다르게 주면 빛을 향해 휘어져 갈 수 있을까?</div>
+        </div>
+      </section>
+
+      <section class="box">
+        <h2>다음 프로젝트</h2>
+        <p><a href="p9-maqueen-line.html">9. 라인트레이서</a> — 밑면 적외선 센서 2개로 검은 선을 따라 달립니다. 조건이 4가지로 늘어나요.</p>
+      </section>
+    </section>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

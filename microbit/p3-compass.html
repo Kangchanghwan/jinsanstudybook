@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>스마트 나침반 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c3">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <!-- 1. 무엇을 만드나 -->
+    <div class="page-head">
+      <h1>3. 스마트 나침반</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 2단계">★★☆</span>
+        <span class="tag">센서값</span>
+        <span class="tag">범위 조건</span>
+        <span class="tag">그리고·또는</span>
+      </p>
+      <p>micro:bit를 들고 몸을 돌리면 화면의 화살표가 따라서 바뀌는 나침반입니다.
+         나침반 센서가 알려 주는 <strong>0~359 사이의 각도</strong>를 네 구간으로 나누고,
+         구간마다 다른 화살표를 띄웁니다. <strong>그리고(AND)</strong>로 "45 이상 그리고 135 미만" 같은
+         범위를 만드는 것이 핵심입니다.</p>
+      <p><strong>화살표는 지금 micro:bit가 향하고 있는 방향입니다.</strong>
+         (북쪽을 바라보면 북쪽 화살표가 나옵니다. 나침반 바늘처럼 북쪽을 가리키는 것이 아닙니다.)</p>
+    </div>
+
+    <!-- 블록이 가로로 길어 2단에서는 글씨를 읽을 수 없다 -> 전체 폭 -->
+    <div class="layout layout--wide">
+
+      <!-- 4. 블록 코드 -->
+      <div class="col-code">
+        <section class="box">
+          <h2>블록 코드</h2>
+          <div class="mc" data-share="S10192-12717-20427-85066" data-name="스마트 나침반">
+            <div class="mc-tabs" role="tablist">
+            <button class="mc-tab is-on" type="button" role="tab" aria-selected="true" data-mc-view="blocks">블록 코드</button>
+            <button class="mc-tab" type="button" role="tab" aria-selected="false" data-mc-view="sim">▶ 시뮬레이터로 실행</button>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+            </div>
+            <div class="mc-frame">
+              <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S10192-12717-20427-85066" title="스마트 나침반 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+            <p class="mc-tip">이 화면은 <strong>보기 전용</strong>입니다. 블록을 보고 MakeCode 새 프로젝트에서 직접 조립하세요. 넓은 코드는 <strong>크게 보기</strong>로, 완성 동작은 <strong>시뮬레이터로 실행</strong>으로 확인할 수 있어요.</p>
+            <figure class="shot print-only">
+            <img src="images/compass.png" loading="lazy"
+                 alt="스마트 나침반 블록 코드. 무한반복 안에서 나침반 방향이 45 이상 그리고 135 미만이면 동쪽 화살표를, 135 이상 그리고 225 미만이면 남쪽 화살표를, 225 이상 그리고 315 미만이면 서쪽 화살표를, 315 이상 또는 45 미만이면 북쪽 화살표를 출력한다.">
+            <figcaption>인쇄용 블록 코드 그림</figcaption>
+          </figure>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="col-info">
+
+        <!-- 2. 준비물 -->
+        <section class="box">
+          <h2>준비물</h2>
+          <ul>
+            <li>micro:bit 본체 1대</li>
+            <li>첫 실행 때는 <strong>8자 그리기 보정</strong>이 필요합니다</li>
+          </ul>
+        </section>
+
+        <!-- 5. 사용법 -->
+        <section class="box">
+          <h2>사용법</h2>
+          <table class="controls">
+            <tbody>
+              <tr><th>들고 몸을 돌리기</th><td>방향에 따라 화살표가 자동으로 바뀝니다</td></tr>
+              <tr><th>처음 켰을 때</th><td>보정 화면이 뜹니다. 아래 안내대로 8자를 그려 주세요</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px">화면에 나오는 각도 구간은 이렇게 나뉩니다.</p>
+          <table class="controls">
+            <tbody>
+              <tr><th>45° ~ 135°</th><td>동쪽을 향함 → 동쪽 화살표</td></tr>
+              <tr><th>135° ~ 225°</th><td>남쪽을 향함 → 남쪽 화살표</td></tr>
+              <tr><th>225° ~ 315°</th><td>서쪽을 향함 → 서쪽 화살표</td></tr>
+              <tr><th>315° ~ 45°</th><td>북쪽을 향함 → 북쪽 화살표</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- 6. 막힐 때 -->
+        <!-- 화살표 = micro:bit가 향한 방향. 네 방향 모두 일관됨 (2026-09-01 코드 수정 반영) -->
+        <section class="box box--note">
+          <h2>막힐 때</h2>
+          <p><strong>처음 켜면 이상한 화면이 나와요.</strong><br>
+             보정(캘리브레이션) 화면입니다. micro:bit를 손목으로 크게 <strong>8자</strong>를 그리듯 돌려
+             화면의 점이 가장자리까지 다 채워지면 끝납니다.</p>
+          <p><strong>화살표가 반대인 것 같아요.</strong><br>
+             이 나침반의 화살표는 <em>내가 향한 방향</em>입니다. 북쪽을 보고 서면 북쪽 화살표가 나옵니다.
+             진짜 나침반 바늘처럼 "북쪽이 어디인지"를 가리키는 것이 아니니 헷갈리지 마세요.</p>
+          <p><strong>화살표가 자꾸 흔들려요.</strong><br>
+             자석·스피커·노트북 가까이에서는 값이 튑니다. 조금 떨어져서 확인하세요.</p>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

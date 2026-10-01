@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>자율주행 경찰차 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c7">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <div class="page-head">
+      <h1>7. 자율주행 경찰차 (마퀸)</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 2단계">★★☆</span>
+        <span class="tag">초음파 센서</span>
+        <span class="tag">모터 제어</span>
+        <span class="tag">RGB LED</span>
+        <span class="tag">조건문</span>
+      </p>
+      <p>초음파로 벽을 피해 다니고, 밑면 LED로 빨강·파랑 경광등을 켜는 로봇 자동차</p>
+    </div>
+
+    <!-- ===== 1단계 소개 ===== -->
+    <section class="step" id="s1" data-title="소개">
+      <p class="step-lead">이 단계에서는 <strong>무엇을 만드는지</strong> 영상으로 보고, 준비물을 확인합니다.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>무엇을 만드나요?</h2>
+            <p>마퀸(Maqueen) 로봇 자동차가 <strong>초음파 센서</strong>로 앞쪽 거리를 재다가, 벽이 가까우면
+               뒤로 물러났다 오른쪽으로 돌아 스스로 피해 다닙니다. 여기에 밑면 <strong>RGB LED</strong>로
+               빨강·파랑 경광등을 켜면 진짜 경찰차처럼 됩니다.</p>
+            <p><strong>"센서로 재고 → 조건문으로 판단하고 → 모터를 돌린다"</strong>는 흐름이 핵심입니다.
+               코드는 두 번에 나누어 만듭니다. 먼저 벽을 피하는 <strong>자율주행</strong>, 그다음 <strong>경광등</strong>을 합칩니다.</p>
+          </section>
+          <section class="box box--demo">
+            <h2>먼저 볼까요? 스스로 달리는 경찰차</h2>
+            <figure class="demo">
+              <video controls preload="none" poster="videos/maqueen-police.jpg" src="videos/maqueen-police.mp4"></video>
+              <figcaption>완성 동작 영상 (약 40초) · 출처: 아이씨뱅큐(icbanq) 네이버 블로그 "Maqueen 본격적으로 사용하기 2부"</figcaption>
+            </figure>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>영상을 보며 생각해 보기</h2>
+            <ul>
+              <li>마퀸은 어떻게 벽(장애물)을 알아챌까?</li>
+              <li>벽 앞에서 마퀸은 어떤 동작을 했을까? (멈춤? 후진? 회전?)</li>
+              <li>경찰차처럼 빨강/파랑 불빛이 켜지려면 무엇이 필요할까?</li>
+              <li>이 모든 것을 블록 몇 개로 만들 수 있어요!</li>
+            </ul>
+          </section>
+          <section class="box">
+            <h2>준비물 (모둠당)</h2>
+            <ul>
+              <li>micro:bit + 마퀸(Maqueen) 본체</li>
+              <li>AA 건전지 3개, micro USB 케이블</li>
+              <li>HC-SR04 초음파 센서 (마퀸 앞쪽 소켓에 꽂기)</li>
+              <li>인터넷이 되는 PC 또는 노트북</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2단계 원리 ===== -->
+    <section class="step" id="s2" data-title="원리">
+      <p class="step-lead">이 단계에서는 <strong>초음파 센서가 거리를 재는 방법</strong>과 <strong>핀 번호</strong>를 알아 둡니다.</p>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>초음파 센서는 어떻게 거리를 잴까?</h2>
+            <p>박쥐가 어둠 속에서 날아다니는 방법과 같습니다.
+               ① 초음파를 쏘고(<strong>Trig</strong>) ② 튕겨 돌아온 소리를 받아(<strong>Echo</strong>)
+               ③ 걸린 시간으로 거리를 계산합니다.</p>
+            <p><strong>거리 = 소리의 속력(약 340 m/s) × 걸린 시간 ÷ 2</strong><br>
+               2로 나누는 이유는 소리가 "갔다가 돌아오는" 왕복 시간이기 때문입니다.
+               이 계산은 <strong>sonar 블록</strong>이 대신 해 주고, 우리는 cm 값만 받으면 됩니다.</p>
+            <ul>
+              <li><strong>초음파</strong>: 사람 귀에 들리지 않는 아주 높은 소리(약 40 kHz). 그래서 시끄럽지 않아요.</li>
+              <li><strong>자동차 후방 센서</strong>: 주차할 때 "삐삐삐" 소리가 빨라지는 것도 같은 원리!</li>
+              <li><strong>센서는 눈이 두 개</strong>: 한쪽은 소리를 쏘고(Trig), 다른 쪽은 받아요(Echo).</li>
+            </ul>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>핀 배치</h2>
+            <figure class="shot">
+              <img src="images/maqueen-hcsr04.jpg" loading="lazy"
+                   alt="마퀸 앞쪽에 꽂힌 파란색 HC-SR04 초음파 센서. 아래에 VCC, Trig, Echo, GND 핀이 있고 양옆에 빨간 헤드라이트 LED가 보인다.">
+              <figcaption>마퀸 앞쪽 소켓에 꽂힌 HC-SR04. 핀 순서는 VCC · Trig · Echo · GND</figcaption>
+            </figure>
+            <table class="controls" style="margin-top:12px">
+              <tbody>
+                <tr><th>Trig (쏘기)</th><td><strong>P1</strong></td></tr>
+                <tr><th>Echo (받기)</th><td><strong>P2</strong></td></tr>
+                <tr><th>밑면 RGB LED 4개</th><td><strong>P15</strong> (번호 0~3)</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px">sonar 블록에 <strong>trig P1 · echo P2</strong>를 넣습니다. 처음엔 P0으로 되어 있으니 꼭 바꿔 주세요.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3단계 확장 추가 ===== -->
+    <section class="step" id="s3" data-title="확장 추가">
+      <p class="step-lead">이 단계에서는 MakeCode에 <strong>새 프로젝트</strong>를 만들고 <strong>확장 프로그램 2개</strong>를 추가합니다. 8~10번 프로젝트에서도 똑같이 합니다.</p>
+
+      <section class="box box--full">
+        <h2>먼저 할 일 — 확장 프로그램 2개 추가하기</h2>
+        <p>마퀸의 모터·LED 블록과 초음파 <strong>ping</strong> 블록은 MakeCode에 처음부터 들어 있지 않습니다.
+           <strong>makecode.microbit.org</strong>에서 <strong>새 프로젝트</strong>를 만든 뒤, 아래 두 확장을 한 번씩 추가해야 블록 목록에 나타납니다.</p>
+        <p class="zoom-hint">그림을 클릭하면 크게 볼 수 있어요.</p>
+
+        <div class="guide-steps guide-steps--two">
+          <figure class="shot">
+            <img src="images/maqueen-ext-maqueen.png" loading="lazy"
+                 alt="확장 검색창에 maqueen을 입력한 결과. 여러 카드 중 DFRobot_MaqueenPlus_v20 카드가 빨간 테두리로 표시되어 있고 Installed 표시가 붙어 있다.">
+            <figcaption><span class="step-no">1</span>블록 목록 맨 아래 <strong>고급 → 확장</strong>을 누르고 <strong>maqueen</strong>을 검색합니다.
+              비슷한 카드가 많으니 반드시 <strong>DFRobot_MaqueenPlus_v20</strong>을 고르세요.
+              왼쪽 목록에 <strong>MaqueenPlusV2&amp;V3</strong>가 생기면 성공.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="images/maqueen-ext-sonar.png" loading="lazy"
+                 alt="확장 검색창에 sonar를 입력한 결과. 첫 번째 보라색 sonar 카드에 Installed 표시가 붙어 있다.">
+            <figcaption><span class="step-no">2</span>다시 <strong>확장</strong>을 열어 <strong>sonar</strong>를 검색하고
+              첫 번째 보라색 <strong>sonar</strong> 카드를 누릅니다. 목록에 <strong>Sonar</strong>(ping 블록)가 생기면 성공.</figcaption>
+          </figure>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===== 4단계 코드 ① 자율주행 ===== -->
+    <section class="step" id="s4" data-title="코드 ① 자율주행">
+      <p class="step-lead">이 단계에서는 경광등 없이 <strong>벽을 피해 다니는 것</strong>까지 완성합니다. 아래 블록을 보고 같은 모양으로 조립하세요.</p>
+
+      <section class="box">
+        <h2>블록 코드 ① — 자율주행 마퀸 (초음파로 벽 피하기)</h2>
+        <div class="mc" data-share="S23756-22876-85373-30690" data-name="자율주행 마퀸">
+          <div class="mc-tabs">
+            <span class="mc-label">블록 코드<span class="sub">보기 전용</span></span>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+          </div>
+          <div class="mc-frame">
+            <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S23756-22876-85373-30690" title="자율주행 마퀸 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+          </div>
+          <p class="mc-tip">이 화면은 보기 전용입니다. 블록을 보고 내 프로젝트에서 직접 조립하세요. 조립 순서는 아래 <strong>만드는 순서</strong>를 따라가면 됩니다.
+            (마퀸 모터는 화면 속 시뮬레이터로는 움직이지 않습니다.)</p>
+          <figure class="shot print-only">
+            <img src="images/maqueen-avoid.png" loading="lazy"
+                 alt="자율주행 마퀸 블록 코드. 무한반복 안에서 거리에 ping trig P1 echo P2 unit cm를 저장하고 10ms 일시중지한다. 거리가 14 이상이면 모든 모터 전진 속도 40 후 10ms 일시중지, 거리가 14 미만이면 모든 모터 후진 속도 40 후 100ms 일시중지, 왼쪽 모터 전진 30과 오른쪽 모터 후진 30 후 500ms 일시중지한다.">
+            <figcaption>인쇄용 블록 코드 그림</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>만드는 순서 ①</h2>
+            <ol class="steps">
+              <li><strong>거리 재고 확인하기</strong>
+                무한반복 안에 <strong>거리에 ping trig P1 echo P2 unit cm 저장</strong> → <strong>숫자 출력 거리</strong> → <strong>일시중지 10ms</strong>.
+                이것만 먼저 올려서 손을 가까이·멀리 하며 LED에 나오는 숫자(cm)를 확인해요.</li>
+              <li><strong>멀면 전진</strong>
+                <strong>만약 거리 ≥ 14 이면</strong> → 모든 모터 방향 전진 속도 40 → 일시중지 10ms.
+                "모든"은 왼쪽+오른쪽 바퀴를 한 번에 돌려 앞으로 갑니다.</li>
+              <li><strong>가까우면 후진 후 우회전</strong>
+                <strong>만약 거리 &lt; 14 이면</strong> → 모든 모터 후진 40 → 일시중지 100ms →
+                왼쪽 모터 전진 30 + 오른쪽 모터 후진 30 → 일시중지 500ms.
+                바퀴가 서로 반대로 돌아 제자리 회전합니다. 이제 <strong>숫자 출력</strong>은 빼세요. 있으면 느려집니다.</li>
+              <li><strong>마퀸에 올리고 테스트</strong>
+                USB로 micro:bit 연결 → <strong>다운로드</strong> → hex 파일을 MICROBIT 드라이브에 복사 →
+                USB를 뽑고 마퀸 전원 스위치 ON. 손바닥이나 책을 앞에 가져가 보세요. 뒤로 물러났다가 오른쪽으로 돌면 성공!</li>
+            </ol>
+            <p style="margin-top:12px"><strong>블록 찾는 곳</strong> — Sonar → ping 블록 | 변수 → "거리" 만들기 |
+               기본 → 숫자 출력, 일시중지 | 논리 → 만약, 비교(≥, &lt;) | MaqueenPlusV2&amp;V3 → 모터 블록</p>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box box--demo">
+            <h2>테스트: 벽을 스스로 피하나요?</h2>
+            <figure class="demo">
+              <video controls preload="none" poster="videos/maqueen-avoid.jpg" src="videos/maqueen-avoid.mp4"></video>
+              <figcaption>자율주행 마퀸 동작 영상 (약 10초) · 출처: 아이씨뱅큐 블로그 1부</figcaption>
+            </figure>
+          </section>
+          <section class="box">
+            <h2>내 코드 점검 체크리스트</h2>
+            <ul>
+              <li>모든 블록이 <strong>무한반복</strong> 안에 들어 있나요?</li>
+              <li>ping 블록의 trig는 <strong>P1</strong>, echo는 <strong>P2</strong>, unit은 <strong>cm</strong>인가요?</li>
+              <li>"숫자 출력 거리"는 빼고 일시중지 10ms만 남겼나요?</li>
+              <li>첫 번째 만약: 거리 ≥ 14 / 두 번째 만약: 거리 &lt; 14 인가요?</li>
+              <li>후진 100ms → 회전 500ms 순서인가요?</li>
+            </ul>
+            <p style="margin-top:12px">왜 14일까요? 단위가 cm라서 "14cm보다 가까우면 피하기"입니다. 실험하며 바꿔도 괜찮아요.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5단계 코드 ② 경광등 ===== -->
+    <section class="step" id="s5" data-title="코드 ② 경광등 합치기">
+      <p class="step-lead">이 단계에서는 코드 ①에 <strong>RGB LED 블록 4개</strong>를 끼워 넣어 경찰차를 완성합니다. 코드 ①을 만든 프로젝트를 그대로 이어서 쓰세요.</p>
+
+      <section class="box">
+        <h2>블록 코드 ② — 경광등을 합쳐 자율주행 경찰차 완성</h2>
+        <p>코드 ①의 무한반복 <strong>맨 위</strong>(ping 블록 바로 위)에 RGB LED 블록 4개와 일시중지를 끼워 넣은 것이 전부입니다.</p>
+        <div class="mc" data-share="S74975-56461-16061-32925" data-name="자율주행 경찰차">
+          <div class="mc-tabs">
+            <span class="mc-label">블록 코드<span class="sub">보기 전용</span></span>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+          </div>
+          <div class="mc-frame">
+            <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S74975-56461-16061-32925" title="자율주행 경찰차 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+          </div>
+          <p class="mc-tip">이 화면은 보기 전용입니다. 코드 ①과 비교해 <strong>달라진 부분(맨 위 LED 블록들)</strong>만 찾아서 추가하세요.</p>
+        </div>
+      </section>
+
+      <div class="layout">
+        <div class="col-code">
+          <section class="box">
+            <h2>만드는 순서 ②</h2>
+            <ol class="steps">
+              <li><strong>LED 하나로 실험하기</strong>
+                MaqueenPlusV2&amp;V3 → <strong>RGB LED 핀 P15 0 색상 빨강 표시</strong> 블록을 무한반복에 하나만 넣고,
+                번호를 0 → 1 → 2 → 3으로 바꿔 가며 마퀸을 뒤집어 어느 LED가 켜지는지 찾아보세요. 끄려면 색상을 검정으로.</li>
+              <li><strong>경광등 4개 넣기</strong>
+                무한반복 맨 위에 <strong>0번 빨강</strong>, <strong>1번 파랑</strong>, 일시중지 300ms,
+                <strong>2번 빨강</strong>, <strong>3번 파랑</strong>, 일시중지 300ms. 핀은 항상 <strong>P15</strong>.</li>
+              <li><strong>코드 ①이 그대로 이어지는지 확인</strong>
+                LED 블록 뒤에 ping 블록부터 만약 2개까지 빠짐없이 이어져야 합니다. 숫자 출력 블록은 없어야 해요.</li>
+              <li><strong>다운로드 → 전원 ON → 바닥에서 테스트</strong>
+                성공 기준: ① 밑면 LED가 빨강/파랑으로 켜진다 ② 장애물 앞에서 후진 후 우회전한다.</li>
+            </ol>
+          </section>
+        </div>
+        <div class="col-info">
+          <section class="box">
+            <h2>사용법 · 성공 기준</h2>
+            <table class="controls">
+              <tbody>
+                <tr><th>손바닥·책을 앞에 대면</th><td>뒤로 물러났다가 오른쪽으로 돕니다</td></tr>
+                <tr><th>앞이 비어 있으면</th><td>속도 40으로 앞으로 갑니다</td></tr>
+                <tr><th>밑면 LED</th><td>0·2번 빨강, 1·3번 파랑으로 켜집니다</td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="box box--note">
+            <h2>막힐 때</h2>
+            <p><strong>움직이지 않아요.</strong><br>
+               건전지, 마퀸 전원 스위치 ON, hex 파일이 제대로 복사되었는지 확인하세요.</p>
+            <p><strong>벽에 그냥 부딪혀요.</strong><br>
+               초음파 센서가 앞을 향하고 있나요? ping 블록의 <strong>P1 / P2, unit cm</strong>를 확인하세요.</p>
+            <p><strong>계속 뒤로만 가요.</strong><br>
+               코드 ① 1단계로 돌아가 거리 값이 제대로 나오는지 확인하세요. 센서 앞에 손이 있지는 않은지도요.</p>
+            <p><strong>너무 늦게 멈춰요.</strong><br>
+               조건값 14를 20~25로 키우거나 속도 40을 낮추세요.</p>
+            <p><strong>LED가 안 켜지거나 일부만 켜져요.</strong><br>
+               핀이 <strong>P15</strong>인지, 블록 4개의 번호가 <strong>0, 1, 2, 3</strong>으로 서로 다른지 확인하세요. 검정은 "끄기"예요.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6단계 도전 ===== -->
+    <section class="step" id="s6" data-title="도전 과제">
+      <p class="step-lead">완성했다면 <strong>숫자와 색만 바꿔</strong> 나만의 차로 바꿔 보세요. 하나씩 바꾸고 다운로드해서 확인!</p>
+
+      <section class="box box--full">
+        <h2>도전 과제 — 숫자와 색만 바꿔도 다른 차가 돼요</h2>
+        <div class="challenges">
+          <div><strong>겁쟁이 마퀸</strong>멀리서부터 미리 피하려면? 조건값 14를 30처럼 크게.</div>
+          <div><strong>용감한 마퀸</strong>벽에 아주 가까이 가서 피하려면? 조건값 14를 8처럼 작게.</div>
+          <div><strong>빠른 마퀸</strong>속도 40을 80으로! (너무 빠르면 벽에 부딪힐 수 있어요)</div>
+          <div><strong>왼쪽으로 도는 마퀸</strong>회전할 때 왼쪽/오른쪽 모터의 전진·후진을 서로 바꿔 보기.</div>
+          <div><strong>번갈아 깜빡이기</strong>색을 서로 바꾼 LED 블록 4개 + 일시중지 300ms를 아래에 추가하면 빨강 ↔ 파랑 경광등!</div>
+          <div><strong>색 바꾸기</strong>구급차 = 빨강/흰색, 소방차 = 빨강/노랑.</div>
+          <div><strong>장애물 만나면 경광등만</strong>LED 블록을 "거리 &lt; 14" 조건 안으로 옮기면 벽을 만났을 때만 켜져요.</div>
+          <div><strong>사이렌 소리</strong>음악 블록 "음 재생"으로 높은음/낮은음을 번갈아 → 진짜 사이렌처럼.</div>
+        </div>
+        <p style="margin-top:14px"><strong>생각해 보기</strong> — 실제 자율주행차는 초음파 외에 어떤 센서를 더 쓸까? (카메라, 라이다, 레이더…)
+           초음파로 잘 감지하기 어려운 물체는? (얇은 막대, 푹신한 천, 비스듬한 벽…)</p>
+      </section>
+
+      <section class="box">
+        <h2>다음 프로젝트</h2>
+        <p><a href="p8-maqueen-light.html">8. 빛을 따라오는 마퀸</a> — 센서 없이 micro:bit 화면으로 빛을 재서 손전등을 따라옵니다.
+           이 프로젝트의 초음파 코드는 <a href="p10-maqueen-line-stop.html">10번</a>에서 라인트레이서와 합쳐 다시 씁니다.</p>
+      </section>
+    </section>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

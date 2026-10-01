@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>처음 시작하기 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="index.html">프로젝트 목록</a>
+  </div>
+</header>
+
+<main class="detail-main c0">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <div class="page-head">
+      <h1>처음 시작하기</h1>
+      <p>블록 코드를 만드는 곳(MakeCode)과, 만든 코드를 micro:bit에 옮기는 방법을 안내합니다.
+         프로젝트를 시작하기 전에 한 번만 읽어 두면 됩니다.</p>
+    </div>
+
+    <div class="layout">
+
+      <div class="col-code">
+        <section class="box">
+          <h2>1. MakeCode 열기</h2>
+          <p>인터넷 브라우저에서 아래 주소로 들어갑니다. 설치할 프로그램은 없습니다.</p>
+          <ul>
+            <li><strong>makecode.microbit.org</strong></li>
+          </ul>
+          <p><strong>새 프로젝트</strong>를 누르고 이름을 적으면 블록을 조립하는 화면이 나옵니다.</p>
+          <p>가운데에서 블록을 끌어다 붙이고, 왼쪽 <strong>시뮬레이터</strong>(화면 속 가짜 micro:bit)로
+             결과를 미리 확인할 수 있습니다. 시뮬레이터에서도 흔들기·버튼 누르기를 해 볼 수 있어요.</p>
+        </section>
+
+        <section class="box" style="margin-top:24px">
+          <h2>2. micro:bit에 옮기기 (hex 파일 전송)</h2>
+          <ol>
+            <li>USB 케이블로 micro:bit를 컴퓨터에 연결합니다.</li>
+            <li>컴퓨터에 <strong>MICROBIT</strong>라는 이름의 USB 드라이브가 새로 나타납니다.</li>
+            <li>MakeCode 화면 왼쪽 아래 <strong>다운로드</strong> 버튼을 누릅니다.
+                <strong>.hex</strong> 파일이 내려받아집니다.</li>
+            <li>내려받은 hex 파일을 <strong>MICROBIT 드라이브 안으로 끌어다 놓습니다.</strong></li>
+            <li>micro:bit 뒷면의 노란 불이 깜빡입니다. 깜빡임이 멈추면 전송 완료입니다.</li>
+          </ol>
+          <p>전송이 끝나면 프로그램이 바로 실행됩니다. USB를 빼고 건전지를 연결해도 그대로 동작합니다.</p>
+        </section>
+
+        <section class="box" style="margin-top:24px">
+          <h2>3. 이 사이트의 블록 코드 화면 사용법</h2>
+          <p>각 프로젝트의 <strong>블록 코드</strong>는 MakeCode 화면이 그대로 들어 있지만 <strong>보기 전용</strong>입니다.
+             블록을 보고 MakeCode 새 프로젝트에서 <strong>직접 조립</strong>하는 것이 이 수업의 목표예요.</p>
+          <table class="controls">
+            <tbody>
+              <tr><th>블록 코드</th><td>완성된 블록을 보여 줍니다. 눌러도 편집되거나 열리지 않아요. 보면서 같은 모양으로 조립하세요.</td></tr>
+              <tr><th>▶ 시뮬레이터로 실행</th><td>1~6번 프로젝트에만 있습니다. 화면 속 micro:bit로 완성 동작을 먼저 봅니다. A·B 버튼과 SHAKE를 눌러 보세요.</td></tr>
+              <tr><th>크게 보기</th><td>블록 화면을 세로로 길게 늘입니다. 함수가 여러 개인 코드를 볼 때 편해요.</td></tr>
+              <tr><th>단계 탭 · 이전/다음</th><td>7~10번 마퀸 프로젝트는 소개 → 원리 → 코드 → 도전처럼 단계마다 한 화면씩 넘겨 봅니다. 위쪽 동그란 번호를 눌러 바로 갈 수도 있어요.</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px">7~10번 마퀸 프로젝트는 <strong>확장 프로그램</strong>(Maqueen, sonar)이 필요합니다.
+             새 프로젝트를 만든 뒤 <a href="p7-maqueen-police.html#s3">7번 프로젝트 3단계</a>의 안내대로 추가하세요.</p>
+        </section>
+
+      </div>
+
+      <div class="col-info">
+        <section class="box">
+          <h2>준비물</h2>
+          <ul>
+            <li>micro:bit 본체</li>
+            <li>USB 케이블 (데이터 전송이 되는 것)</li>
+            <li>인터넷이 되는 컴퓨터</li>
+            <li>건전지팩 (컴퓨터에서 분리해 쓸 때)</li>
+          </ul>
+        </section>
+
+        <section class="box box--note">
+          <h2>막힐 때</h2>
+          <p><strong>MICROBIT 드라이브가 안 보여요.</strong><br>
+             충전만 되는 USB 케이블일 수 있습니다. 다른 케이블로 바꿔 보세요.</p>
+          <p><strong>다운로드한 파일을 못 찾겠어요.</strong><br>
+             보통 <strong>다운로드</strong> 폴더에 들어갑니다.</p>
+          <p><strong>노란 불이 계속 깜빡여요.</strong><br>
+             전송 중입니다. 멈출 때까지 USB를 뽑지 마세요.</p>
+          <p><strong>화면에 아무것도 안 나와요.</strong><br>
+             건전지가 연결되어 있는지, 스위치가 켜져 있는지 확인하세요.</p>
+        </section>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

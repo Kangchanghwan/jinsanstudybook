@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>진산 스터디북 | 진산중학교 정보 수업</title>
+<meta name="description" content="진산중학교 정보 수업 자료 모음. micro:bit 코딩 수업 자료와 이진수 챌린지 게임.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1d1d1f;--cream:#fff6e3;--yellow:#ffd23f;--red:#ff5a5f;--blue:#3d8bfd;--green:#2ec27e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;font-family:'Jua',sans-serif;color:var(--ink);
+    background:var(--cream) radial-gradient(#e9dcc0 2px,transparent 2.5px) 0 0/28px 28px;
+    display:flex;flex-direction:column;align-items:center;padding:56px 24px 40px}
+  .badge{display:inline-block;background:#fff;border:4px solid var(--ink);border-radius:999px;
+    padding:8px 22px;font-size:22px;box-shadow:4px 4px 0 var(--ink)}
+  h1{font-family:'Black Han Sans',sans-serif;font-size:clamp(56px,8vw,104px);margin:22px 0 8px;
+    color:var(--yellow);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;
+    text-shadow:6px 6px 0 var(--ink);transform:rotate(-2deg);letter-spacing:2px}
+  .lead{font-size:26px;margin-bottom:48px;text-align:center}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:40px;width:100%;max-width:1100px}
+  .card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--ink);
+    background:#fff;border:5px solid var(--ink);border-radius:28px;padding:36px 36px 32px;
+    box-shadow:10px 10px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+  .card:hover{transform:translate(-3px,-3px);box-shadow:13px 13px 0 var(--ink)}
+  .card:active{transform:translate(8px,8px);box-shadow:2px 2px 0 var(--ink)}
+  .icon{width:120px;height:120px;border:5px solid var(--ink);border-radius:24px;display:grid;place-items:center}
+  .c-game .icon{background:var(--yellow)} .c-mb .icon{background:var(--blue)}
+  .card h2{font-family:'Black Han Sans',sans-serif;font-size:48px;font-weight:400}
+  .card p{font-size:24px;line-height:1.45}
+  .go{margin-top:auto;align-self:flex-start;font-size:26px;padding:12px 28px;border:4px solid var(--ink);
+    border-radius:16px;background:var(--red);color:#fff;box-shadow:4px 4px 0 var(--ink)}
+  .c-mb .go{background:var(--green)}
+  .new{position:absolute;margin:-52px 0 0 250px;background:var(--red);color:#fff;border:4px solid var(--ink);
+    border-radius:12px;padding:4px 14px;font-size:22px;transform:rotate(8deg)}
+  footer{margin-top:56px;font-size:20px;opacity:.7}
+</style>
+</head>
+<body>
+  <span class="badge">진산중학교 정보 수업</span>
+  <h1>진산 스터디북</h1>
+  <p class="lead">오늘 할 활동을 골라 보세요</p>
+
+  <main class="grid">
+    <a class="card c-game" href="binary/">
+      <div class="icon" aria-hidden="true">
+        <svg width="72" height="84" viewBox="0 0 72 84"><path d="M36 4C19 4 8 16 8 31c0 11 6 17 11 23 3 4 4 8 4 11h26c0-3 1-7 4-11 5-6 11-12 11-23C64 16 53 4 36 4Z" fill="#fff" stroke="#1d1d1f" stroke-width="5"/><rect x="23" y="66" width="26" height="8" rx="3" fill="#1d1d1f"/><rect x="27" y="76" width="18" height="6" rx="3" fill="#1d1d1f"/><text x="36" y="42" text-anchor="middle" font-family="Black Han Sans" font-size="26" fill="#1d1d1f">01</text></svg>
+      </div>
+      <span class="new">NEW</span>
+      <h2>이진수 챌린지</h2>
+      <p>전구를 켜고, 카드를 뒤집고, 2로 나눠서<br>십진수와 이진수를 바꿔 보는 게임</p>
+      <span class="go">게임 시작</span>
+    </a>
+    <a class="card c-mb" href="microbit/">
+      <div class="icon" aria-hidden="true">
+        <svg width="84" height="64" viewBox="0 0 84 64"><rect x="4" y="4" width="76" height="56" rx="12" fill="#fff" stroke="#1d1d1f" stroke-width="5"/><g fill="#1d1d1f"><circle cx="30" cy="26" r="6"/><circle cx="54" cy="26" r="6"/></g><circle cx="12" cy="32" r="3" fill="#1d1d1f"/><circle cx="72" cy="32" r="3" fill="#1d1d1f"/><path d="M28 42q14 10 28 0" stroke="#1d1d1f" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <h2>micro:bit 수업</h2>
+      <p>만보기, 나침반, 선풍기부터 마퀸 로봇 자동차까지<br>블록 코드와 만드는 방법</p>
+      <span class="go">자료 보기</span>
+    </a>
+  </main>
+
+  <footer>진산중학교 · 진산 스터디북</footer>
+</body>
+</html>

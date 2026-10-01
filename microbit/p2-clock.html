@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>시계 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c2">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <!-- 1. 무엇을 만드나 -->
+    <div class="page-head">
+      <h1>2. 시계</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 2단계">★★☆</span>
+        <span class="tag">반복</span>
+        <span class="tag">조건 중첩</span>
+        <span class="tag">문자열 연결</span>
+        <span class="tag">나머지</span>
+      </p>
+      <p>버튼으로 시와 분을 직접 맞춰 놓으면, 흔들 때마다 현재 시각을 <strong>9:05</strong> 같은 모양으로
+         보여 주는 시계입니다. 1분(60000밀리초)마다 분을 1씩 올리고, 분이 59를 넘으면 0으로 되돌리면서
+         시를 1 올리는 <strong>조건 중첩</strong>이 핵심입니다.</p>
+    </div>
+
+    <!-- 가로로 넓은 이미지 -> 2단을 무시하고 전체 폭 -->
+    <div class="layout layout--wide">
+
+      <!-- 4. 블록 코드 -->
+      <div class="col-code">
+        <section class="box">
+          <h2>블록 코드</h2>
+          <div class="mc" data-share="S06619-89840-76762-78245" data-name="시계">
+            <div class="mc-tabs" role="tablist">
+            <button class="mc-tab is-on" type="button" role="tab" aria-selected="true" data-mc-view="blocks">블록 코드</button>
+            <button class="mc-tab" type="button" role="tab" aria-selected="false" data-mc-view="sim">▶ 시뮬레이터로 실행</button>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+            </div>
+            <div class="mc-frame">
+              <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S06619-89840-76762-78245" title="시계 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+            <p class="mc-tip">이 화면은 <strong>보기 전용</strong>입니다. 블록을 보고 MakeCode 새 프로젝트에서 직접 조립하세요. 넓은 코드는 <strong>크게 보기</strong>로, 완성 동작은 <strong>시뮬레이터로 실행</strong>으로 확인할 수 있어요.</p>
+            <figure class="shot print-only">
+            <img src="images/clock.png" loading="lazy"
+                 alt="시계 블록 코드. 시작하면 ampm·adjust·time·minutes·hours 변수를 초기화한다. 무한반복에서 60000밀리초 일시중지 후, minutes가 59보다 작으면 1 증가시키고 아니면 0으로 되돌리며 hours를 1 증가시킨다. A 버튼은 hours를, B 버튼은 minutes를 1씩 올린다. 흔들림이 감지되면 hours와 minutes를 문자열로 연결해 시:분 형태로 출력한다.">
+            <figcaption>인쇄용 블록 코드 그림</figcaption>
+          </figure>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="col-info">
+
+        <!-- 2. 준비물 -->
+        <section class="box">
+          <h2>준비물</h2>
+          <ul>
+            <li>micro:bit 본체 1대</li>
+          </ul>
+        </section>
+
+        <!-- 5. 사용법 -->
+        <section class="box">
+          <h2>사용법</h2>
+          <table class="controls">
+            <tbody>
+              <tr><th>A 버튼</th><td>시(hour)가 1 늘어납니다 (23 다음은 0)</td></tr>
+              <tr><th>B 버튼</th><td>분(minute)이 1 늘어납니다 (59 다음은 0)</td></tr>
+              <tr><th>흔들기</th><td>지금 시각을 화면에 흘려서 보여 줍니다</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- 6. 막힐 때 -->
+        <!-- TODO(미확정): 이 지연을 설명으로 안내할지, running time 기반으로 코드를 고칠지 확정 필요.
+             코드를 고치면 images/clock.png 도 다시 캡처해야 합니다.
+             지금은 요청서대로 "설명으로 안내" 상태입니다. -->
+        <section class="box box--note">
+          <h2>막힐 때</h2>
+          <p><strong>오래 켜 두면 실제 시간보다 조금씩 느려져요.</strong></p>
+          <p>이 시계는 <em>60초를 세고 1분 올리기</em>를 반복하는 방식입니다.
+             한 바퀴 돌 때마다 아주 짧은 시간이 더 걸리는데, 그 차이가 쌓여서 점점 밀립니다.
+             수업용으로는 괜찮고, 오래 쓸 때는 버튼으로 다시 맞춰 주세요.</p>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

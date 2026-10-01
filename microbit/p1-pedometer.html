@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>만보기 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c1">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <!-- 1. 무엇을 만드나 — 상단 전체 폭 -->
+    <div class="page-head">
+      <h1>1. 만보기</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 1단계">★☆☆</span>
+        <span class="tag">변수</span>
+        <span class="tag">이벤트</span>
+        <span class="tag">값 증가</span>
+      </p>
+      <p>micro:bit를 손에 들고 흔들 때마다 걸음 수가 1씩 올라가는 만보기입니다.
+         걸음 수를 담아 두는 <strong>변수</strong>를 만들고, 흔들림이 감지될 때마다
+         그 변수의 값을 1씩 늘리는 것이 핵심입니다.</p>
+    </div>
+
+    <div class="layout">
+
+      <!-- 4. 블록 코드 — 왼쪽, 크게 -->
+      <div class="col-code">
+        <section class="box">
+          <h2>블록 코드</h2>
+          <div class="mc" data-share="S42237-66411-94332-88319" data-name="만보기">
+            <div class="mc-tabs" role="tablist">
+            <button class="mc-tab is-on" type="button" role="tab" aria-selected="true" data-mc-view="blocks">블록 코드</button>
+            <button class="mc-tab" type="button" role="tab" aria-selected="false" data-mc-view="sim">▶ 시뮬레이터로 실행</button>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+            </div>
+            <div class="mc-frame">
+              <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S42237-66411-94332-88319" title="만보기 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+            <p class="mc-tip">이 화면은 <strong>보기 전용</strong>입니다. 블록을 보고 MakeCode 새 프로젝트에서 직접 조립하세요. 넓은 코드는 <strong>크게 보기</strong>로, 완성 동작은 <strong>시뮬레이터로 실행</strong>으로 확인할 수 있어요.</p>
+            <figure class="shot print-only">
+            <img src="images/pedometer.png" loading="lazy"
+                 alt="만보기 블록 코드. 시작하면 숫자 0을 출력하고, 흔들림이 감지될 때 걸음수 값을 1 증가시킨 뒤 걸음수를 출력하며, A+B 버튼을 누르면 걸음수에 0을 저장하고 0을 출력한다.">
+            <figcaption>인쇄용 블록 코드 그림</figcaption>
+          </figure>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="col-info">
+
+        <!-- 2. 준비물 — 오른쪽 -->
+        <section class="box">
+          <h2>준비물</h2>
+          <ul>
+            <li>micro:bit 본체 1대</li>
+          </ul>
+        </section>
+
+        <!-- 5. 사용법 — 오른쪽 -->
+        <section class="box">
+          <h2>사용법</h2>
+          <table class="controls">
+            <tbody>
+              <tr>
+                <th>흔들기</th>
+                <td>걸음 수가 1 늘어납니다</td>
+              </tr>
+              <tr>
+                <th>A + B 동시에</th>
+                <td>걸음 수를 0으로 되돌립니다</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- 6. 막힐 때 — 오른쪽 -->
+        <section class="box box--note">
+          <h2>막힐 때</h2>
+          <p><strong>흔들어도 숫자가 안 올라가요.</strong><br>
+             살짝 흔들면 감지되지 않습니다. 손목을 이용해 <strong>딱 끊어지게</strong> 흔들어 보세요.</p>
+          <p><strong>한 번 흔들었는데 2씩 올라가요.</strong><br>
+             크게 흔들면 흔들림이 두 번 감지될 수 있습니다. 고장이 아니니 조금 작게 흔들어 보세요.</p>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

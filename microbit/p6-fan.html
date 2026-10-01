@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<title>스마트 선풍기 — micro:bit 수업 자료</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="header-link home-link" href="../">&larr; 진산 스터디북</a>
+    <a class="site-title" href="index.html">micro:bit 수업 자료<span class="sub">진산중학교</span></a>
+    <a class="header-link" href="step.html">처음 시작하기</a>
+  </div>
+</header>
+
+<main class="detail-main c6">
+  <div class="wrap">
+
+    <p class="crumb"><a href="index.html">← 프로젝트 목록으로</a></p>
+
+    <!-- 1. 무엇을 만드나 -->
+    <div class="page-head">
+      <h1>6. 스마트 선풍기</h1>
+      <p class="head-meta">
+        <span class="level" aria-label="난이도 3단계 중 3단계">★★★</span>
+        <span class="tag">초음파 센서</span>
+        <span class="tag">모터 제어</span>
+        <span class="tag">함수 분리</span>
+      </p>
+      <p>초음파 센서로 앞쪽 거리를 계속 재다가, 손이 <strong>4cm보다 가까이</strong> 오면 스스로 멈추는
+         선풍기입니다. 거리를 재는 일과 모터를 돌리는 일을 각각 <strong>함수</strong>로 나눠 두어,
+         무한반복 안은 "재고 → 판단하고 → 돌린다"만 남긴 것이 핵심입니다.</p>
+    </div>
+
+    <!-- 2. 준비물 + 핀 배치 -->
+    <div class="layout">
+      <div class="col-code">
+        <section class="box">
+          <h2>준비물</h2>
+          <ul>
+            <li>micro:bit 본체</li>
+            <li>IoT:bit 확장보드</li>
+            <li>HC-SR04 초음파 센서</li>
+            <li>팬 모터 모듈</li>
+            <li>AA 2구 건전지팩 (3V)</li>
+            <li>점퍼선</li>
+          </ul>
+        </section>
+      </div>
+      <div class="col-info">
+        <section class="box">
+          <h2>핀 배치</h2>
+          <table class="controls">
+            <tbody>
+              <tr><th>P0</th><td>모터 (S)</td></tr>
+              <tr><th>P1</th><td>초음파 Trig</td></tr>
+              <tr><th>P2</th><td>초음파 Echo</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+
+    <!-- 3. 배선도 — 전체 폭 (선풍기만) -->
+    <section class="box box--full" style="margin-top:24px">
+      <h2>배선도</h2>
+      <p class="zoom-hint">그림을 클릭하면 크게 볼 수 있어요. 원본이 커서 확대 화면 안에서 스크롤됩니다.</p>
+      <figure class="shot">
+        <img src="images/fan-wiring.png" loading="lazy"
+             alt="스마트 선풍기 배선도. HC-SR04 초음파 센서의 Echo를 P2에, Trig를 P1에, Vcc를 3V3 열에, Gnd를 G 열에 연결한다. 팬 모터 모듈의 S를 P0에, VCC를 건전지 플러스에, GND를 건전지 마이너스에 연결하고, 건전지 마이너스를 확장보드 I2C 헤더의 GND로 한 가닥 더 분기한다.">
+        <figcaption>번호는 연결 순서가 아니라 배선 목록의 번호입니다. 오른쪽 아래 표에서 꽂을 자리를 확인하세요.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 연결 순서 사진 -->
+    <!-- TODO: 사진이 상세1 · 상세2 · 상세4 만 있습니다. "상세3" 사진을 받으면
+               images/fan-step3.png 앞에 끼워 넣고 아래 캡션도 함께 채워 주세요. -->
+    <section class="box box--full">
+      <h2>연결할 때 주의할 점</h2>
+      <p class="zoom-hint">사진을 클릭하면 크게 볼 수 있어요.</p>
+      <div class="photo-steps">
+
+        <figure class="shot">
+          <img src="images/fan-step1.png" loading="lazy"
+               alt="상세1 사진. 건전지팩과 모터선을 잇는 흰색 커넥터에서 금속이 드러나 보이는 면을 표시하고, 모터선의 가운데 빨간 선을 연결하라는 안내와, 검은 선을 확장보드의 가장 왼쪽 위 GND에 연결하라는 안내가 붙어 있다.">
+          <figcaption>커넥터는 <strong>철이 드러나 보이는 면</strong>을 확인하고 끼웁니다. 모터선은 <strong>가운데(빨강)</strong>를 건전지팩 쪽에 연결하고, 검은 선은 확장보드 GND로 보냅니다.</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <img src="images/fan-step2.png" loading="lazy"
+               alt="상세2 사진. 모터의 검은 선을 확장보드 I2C 헤더 왼쪽 아래 GND 자리에 꽂는 모습을 화살표로 가리키고 있다.">
+          <figcaption>모터의 <strong>검은 선</strong>은 I2C 헤더 옆 <strong>GND</strong> 자리에 꽂습니다. 이 선이 빠지면 모터가 돌지 않습니다.</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <img src="images/fan-step3.png" loading="lazy"
+               alt="상세4 사진. AA 2구 건전지팩의 스위치를 OFF에서 ON 쪽으로 미는 모습을 빨간 화살표로 표시하고 있다.">
+          <figcaption>마지막으로 건전지팩 스위치를 <strong>ON</strong> 쪽으로 밉니다. 이것을 자주 잊어버립니다.</figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+    <!-- 초음파 센서(sonar) 확장 블록 추가하기 -->
+    <section class="box box--full">
+      <h2>먼저 할 일 — 초음파 센서 블록 추가하기</h2>
+      <p>거리를 재는 <strong>ping trig / echo</strong> 블록은 MakeCode에 처음부터 들어 있지 않습니다.
+         <strong>sonar 확장</strong>을 한 번 추가해야 블록 목록에 나타납니다.
+         아래 순서대로 하면 됩니다. (프로젝트마다 한 번씩 해 주어야 합니다.)</p>
+      <p class="zoom-hint">그림을 클릭하면 크게 볼 수 있어요.</p>
+
+      <div class="guide-steps">
+
+        <figure class="shot">
+          <img src="images/sonar-1-extension.png" loading="lazy"
+               alt="MakeCode 왼쪽 블록 목록. 기본, 입력, 음악, LED, 라디오, 반복, 논리, 변수, 계산 아래에 확장 메뉴가 있다.">
+          <figcaption><span class="step-no">1</span>블록 목록 맨 아래 <strong>확장</strong>을 누릅니다. (계산 바로 아래에 있습니다)</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <img src="images/sonar-2-search.png" loading="lazy"
+               alt="확장 검색 화면에 sonar를 입력한 결과. sonar 패키지와 bitbot 패키지가 카드로 나타나 있다.">
+          <figcaption><span class="step-no">2</span>검색창에 <strong>sonar</strong>를 입력하고, 왼쪽 <strong>sonar</strong> 카드를 누릅니다.</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <img src="images/sonar-3-block.png" loading="lazy"
+               alt="블록 목록에 Sonar 항목이 새로 생겼고, ping trig P0 echo P0 블록이 노란 테두리로 표시되어 있다. 오른쪽에는 forever 안에 set Distance to 0 블록이 놓여 있다.">
+          <figcaption><span class="step-no">3</span>목록에 <strong>Sonar</strong>가 생깁니다. <strong>ping trig / echo</strong> 블록을 꺼내 <strong>거리에 저장</strong> 블록의 <strong>0</strong> 자리에 끼웁니다.</figcaption>
+        </figure>
+
+      </div>
+
+      <section class="box box--note" style="margin-top:20px">
+        <h2>여기서 꼭 바꿀 것</h2>
+        <p>꺼낸 블록은 처음에 <strong>trig P0 · echo P0</strong>으로 되어 있습니다.
+           우리 선풍기는 <strong>trig를 P1, echo를 P2</strong>로 씁니다.
+           드롭다운을 눌러 <strong>반드시 바꿔 주세요.</strong> 그대로 두면 거리가 0으로만 나옵니다.</p>
+      </section>
+    </section>
+
+    <!-- 가로로 넓은 이미지 -> 전체 폭 -->
+    <div class="layout layout--wide">
+
+      <!-- 4. 블록 코드 -->
+      <div class="col-code">
+        <section class="box">
+          <h2>블록 코드</h2>
+          <div class="mc" data-share="S03963-59286-53430-91367" data-name="스마트 선풍기">
+            <div class="mc-tabs" role="tablist">
+            <button class="mc-tab is-on" type="button" role="tab" aria-selected="true" data-mc-view="blocks">블록 코드</button>
+            <button class="mc-tab" type="button" role="tab" aria-selected="false" data-mc-view="sim">▶ 시뮬레이터로 실행</button>
+            <span class="mc-spacer"></span>
+            <button class="mc-tab" type="button" data-mc-tall>크게 보기</button>
+            </div>
+            <div class="mc-frame">
+              <iframe data-view="blocks" src="https://makecode.microbit.org/---codeembed#pub:S03963-59286-53430-91367" title="스마트 선풍기 블록 코드" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+            <p class="mc-tip">이 화면은 <strong>보기 전용</strong>입니다. 블록을 보고 MakeCode 새 프로젝트에서 직접 조립하세요. 넓은 코드는 <strong>크게 보기</strong>로, 완성 동작은 <strong>시뮬레이터로 실행</strong>으로 확인할 수 있어요.</p>
+            <figure class="shot print-only">
+            <img src="images/fan.png" loading="lazy"
+                 alt="스마트 선풍기 블록 코드. 시작하면 아이콘을 띄우고 기계ON/OFF와 선풍기ON/OFF를 0으로 저장한다. A 버튼을 누르면 기계ON/OFF가 0이면 1로, 아니면 0으로 바꾸고 선풍기도 끈다. 무한반복에서 기계ON/OFF가 1이면 거리측정 함수를 부르고, 거리가 4 이상이면 선풍기ON/OFF에 1을, 아니면 0을 저장한 뒤 선풍기 함수를 부른다. 거리측정 함수는 ping trig P1, echo P2, 단위 cm 값을 거리에 저장한다. 선풍기 함수는 선풍기ON/OFF가 1이면 P0에 디지털 값 1을 출력하고 아니면 0을 출력하며 각각 다른 아이콘을 보여 준다.">
+            <figcaption>인쇄용 블록 코드 그림</figcaption>
+          </figure>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="col-info col-info--two">
+
+        <!-- 5. 사용법 -->
+        <section class="box">
+          <h2>사용법</h2>
+          <table class="controls">
+            <tbody>
+              <tr><th>A 버튼</th><td>전원을 켜고 끕니다 (누를 때마다 바뀜)</td></tr>
+              <tr><th>손이 멀리 있을 때</th><td>4cm 이상이면 날개가 돕니다</td></tr>
+              <tr><th>손을 가까이</th><td>4cm보다 가까우면 즉시 멈춥니다</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px">전원이 꺼져 있으면 손을 대도 아무 반응이 없습니다. 먼저 A를 눌러 켜세요.</p>
+        </section>
+
+        <!-- 6. 막힐 때 -->
+        <section class="box box--note">
+          <h2>막힐 때</h2>
+          <p><strong>날개가 전혀 안 돌아요.</strong><br>
+             ① 건전지팩 스위치가 <strong>ON</strong>인지, ② 모터의 <strong>검은 선이 확장보드 GND</strong>에
+             꽂혀 있는지 확인하세요. 이 두 가지가 가장 흔한 원인입니다.</p>
+          <p><strong>거리가 이상하게 나와요.</strong><br>
+             <strong>Trig는 P1, Echo는 P2</strong>입니다. 두 선이 바뀌면 거리가 0이거나 엉뚱한 값이 됩니다.</p>
+          <p><strong>손을 안 댔는데 멈춰요.</strong><br>
+             센서 앞에 책·필통 같은 것이 있는지 보세요. 센서는 앞쪽에 있는 것이면 무엇이든 잽니다.</p>
+          <p><strong>계속 돌기만 하고 안 멈춰요.</strong><br>
+             센서가 벽이나 천장을 향하고 있으면 거리가 늘 멀게 나옵니다. 센서를 앞쪽으로 돌려 주세요.</p>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
