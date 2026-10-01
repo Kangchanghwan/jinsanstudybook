@@ -5,7 +5,7 @@
  */
 var SHEET_NAME = 'records';
 var HEADERS = ['시각', '학년', '반', '번호', '이름', '스테이지', '점수', '정답수', '오답수', '소요시간(초)', '최고콤보', '별', '기기ID'];
-var MAX_CLASS = 8;
+var MAX_CLASS = 10;
 var CACHE_SECONDS = 20;
 
 function setup() {
