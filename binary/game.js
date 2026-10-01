@@ -5,12 +5,11 @@ var CFG = Object.assign({ API_URL: '', CLASS_COUNT: 8, GRADE: 2 }, window.GAME_C
 var DEBUG = /[?&]debug=1/.test(location.search);
 // 디버그 전용: ?debug=1&api=<주소> 로 API 주소를 바꿔 모의 서버로 테스트할 수 있다.
 if (DEBUG) { var apiQ = /[?&]api=([^&]*)/.exec(location.search); if (apiQ) CFG.API_URL = decodeURIComponent(apiQ[1]); }
-// 선생님 설정 (settings 탭). 서버에서 못 받으면 기본값 유지.
-var CFG_DEF = { s1: 8, s2: 8, s3: 5, s4: 60 };
-CFG.stage = Object.assign({}, CFG_DEF);
-var CFG_RANGE = { s1: [1, 15], s2: [1, 20], s3: [1, 11], s4: [20, 180] };
-var CFG_KEY = { s1: 'stage1_count', s2: 'stage2_count', s3: 'stage3_count', s4: 'stage4_seconds' };
-var VALS = [8, 4, 2, 1];
+// 선생님 설정 (settings 탭, v3). 서버에서 못 받으면 기본값 유지.
+// s1~s3: { on, bits, count }, s4: { on, bits, sec }
+var CFG_DEF = { s1: { on: 1, bits: 4, count: 8 }, s2: { on: 1, bits: 4, count: 8 }, s3: { on: 1, bits: 4, count: 5 }, s4: { on: 1, bits: 4, sec: 60 } };
+function cloneStageCfg(o) { var r = {}; Object.keys(o).forEach(function (k) { r[k] = Object.assign({}, o[k]); }); return r; }
+CFG.stage = cloneStageCfg(CFG_DEF);
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -39,9 +38,32 @@ function h(tag, attrs) {
 function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 function range(a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; }
 function pop(n) { return n.toString(2).split('1').length - 1; }
-function bits4(n) { return [(n >> 3) & 1, (n >> 2) & 1, (n >> 1) & 1, n & 1]; }
-function sumBits(b) { return b.reduce(function (a, x, i) { return a + x * VALS[i]; }, 0); }
-function eqText(b) { return b.map(function (x, i) { return x ? VALS[i] : 0; }).join(' + ') + ' = ' + sumBits(b); }
+/* v3: N비트 일반화 + 지수 표기 */
+var SUPS = '\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079';
+function sup(n) { return String(n).split('').map(function (c) { return SUPS.charAt(+c); }).join(''); }
+function pw(e) { return '2' + sup(e); }
+function maxOf(N) { return Math.pow(2, N) - 1; }
+function valsOf(N) { var a = []; for (var i = N - 1; i >= 0; i--) a.push(Math.pow(2, i)); return a; }
+function bitsOf(n, N) { var a = []; for (var i = N - 1; i >= 0; i--) a.push((n >> i) & 1); return a; }
+function sumBits(b) { var N = b.length; return b.reduce(function (a, x, i) { return a + x * Math.pow(2, N - 1 - i); }, 0); }
+function eqText(b) { var N = b.length; return b.map(function (x, i) { return x ? Math.pow(2, N - 1 - i) : 0; }).join(' + ') + ' = ' + sumBits(b); }
+function eqExp(b) { var N = b.length; return b.map(function (x, i) { return x + '\u00d7' + pw(N - 1 - i); }).join(' + ') + ' = ' + sumBits(b); }
+function eqExpShort(b) {
+  var N = b.length, t = [];
+  b.forEach(function (x, i) { if (x) t.push(pw(N - 1 - i)); });
+  return (t.length ? t.join(' + ') : '0') + ' = ' + sumBits(b);
+}
+function tierOf(N) { return N <= 4 ? 1 : N <= 6 ? 2 : 3; }
+function setTier(pg, N) { pg.classList.remove('t1', 't2', 't3'); pg.classList.add('t' + tierOf(N)); }
+/* 한 줄 유지: .fit 요소는 data-max/data-min(px) 사이에서 줄 안 넘치게 글자 크기를 줄인다 */
+function fitLine(el) {
+  var mx = +el.getAttribute('data-max') || 60, mn = +el.getAttribute('data-min') || 24, fs = mx;
+  el.style.fontSize = fs + 'px';
+  if (!el.offsetParent) return;
+  var guard = 60;
+  while (el.scrollWidth > el.clientWidth + 1 && fs > mn && guard-- > 0) { fs -= 2; el.style.fontSize = fs + 'px'; }
+}
+function refit(root) { $$('.fit', root || document).forEach(fitLine); }
 function fmt(n) { return Number(n).toLocaleString('ko-KR'); }
 function later(fn, ms) { var t = setTimeout(fn, ms); cleanups.push(function () { clearTimeout(t); }); return t; }
 var LS = {
@@ -125,9 +147,9 @@ function show(id) {
   curPage = id; miniMapEl = null; if (typeof RK !== 'undefined') RK.onPage(id);
   var pg = $('#pg-' + id); pg.innerHTML = ''; return pg;
 }
-function banner(title, sub, ms, cb) {
-  var b = $('#banner'); $('.bt', b).textContent = title; $('.s', b).textContent = sub || '';
-  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+function banner(title, sub, ms, cb, sub2) {
+  var b = $('#banner'); $('.bt', b).textContent = title; $('.s1', b).textContent = sub || ''; $('.s2', b).textContent = sub2 || '';
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show'); refit(b);
   confetti(36); sfx.ok();
   later(function () { b.classList.remove('show'); if (cb) cb(); }, ms || 1400);
 }
@@ -159,18 +181,35 @@ function deviceId() { var d = LS.get('binq.dev', null); if (!d) { d = 'd' + Math
 function whoText() { return CFG.GRADE + '학년 ' + P.cls + '반 ' + P.num + '번'; }
 
 /* ---------- 설정(config) ---------- */
+// 스테이지 3의 문제 범위: N자리 이진수가 되는 수 위주 [max(5, 2^(N-1)) ... 2^N-1]
+function s3Range(bits) { return [Math.max(5, Math.pow(2, bits - 1)), Math.pow(2, bits) - 1]; }
+function countCap(n, bits) {
+  var max = Math.pow(2, bits) - 1;
+  if (n === 1) return Math.min(30, max);
+  if (n === 2) return 30;
+  var r = s3Range(bits); return Math.min(20, r[1] - r[0] + 1);
+}
 function clampCfg(c) {
-  var out = {}, changed = false;
-  Object.keys(CFG_KEY).forEach(function (k) {
-    var n = Math.round(Number(c && c[CFG_KEY[k]]));
-    if (c && c[CFG_KEY[k]] !== '' && c[CFG_KEY[k]] != null && isFinite(n)) out[k] = Math.min(CFG_RANGE[k][1], Math.max(CFG_RANGE[k][0], n));
+  if (!c) return false;
+  var next = cloneStageCfg(CFG.stage), anyOn = false;
+  function num(v) { if (v === '' || v == null) return NaN; var n = Math.round(Number(v)); return isFinite(n) ? n : NaN; }
+  [1, 2, 3, 4].forEach(function (n) {
+    var o = next['s' + n], p = 'stage' + n + '_', v;
+    v = num(c[p + 'enabled']); if (!isNaN(v)) o.on = v === 0 ? 0 : 1;
+    v = num(c[p + 'bits']); if (!isNaN(v)) o.bits = Math.min(8, Math.max(3, v));
+    if (n === 4) { v = num(c.stage4_seconds); if (!isNaN(v)) o.sec = Math.min(180, Math.max(20, v)); }
+    else { v = num(c[p + 'count']); if (!isNaN(v)) o.count = v; o.count = Math.min(countCap(n, o.bits), Math.max(1, o.count)); }
+    if (o.on) anyOn = true;
   });
-  Object.keys(out).forEach(function (k) { if (CFG.stage[k] !== out[k]) { CFG.stage[k] = out[k]; changed = true; } });
+  if (!anyOn) [1, 2, 3, 4].forEach(function (n) { next['s' + n].on = 1; });
+  var changed = JSON.stringify(next) !== JSON.stringify(CFG.stage);
+  if (changed) CFG.stage = next;
   return changed;
 }
+function stageCfg(n) { return CFG.stage['s' + n]; }
 function applyConfig(c) {
   if (!clampCfg(c)) return;
-  if (curPage === 'intro' && curIntroN) renderIntro(curIntroN);
+  if (curPage === 'intro' && curIntroN) { if (stageCfg(curIntroN).on) renderIntro(curIntroN); else renderMap(true); }
   else if (curPage === 'map' && P) renderMap(true);
 }
 function apiUrl(action, extra) { return CFG.API_URL + (CFG.API_URL.indexOf('?') < 0 ? '?' : '&') + 'action=' + action + (extra || ''); }
@@ -373,26 +412,29 @@ var STAGES = [
   { n: 3, name: '나눗셈 사다리', ic: 'ladderIcon', sub: '2로 나누기' },
   { n: 4, name: '타임어택', ic: 'clockIcon', sub: '빠르게 변환하기' }
 ];
-function stageTitle(s) { return s.n === 4 ? '타임어택 ' + CFG.stage.s4 + '초' : s.name; }
+function stageTitle(s) { return s.n === 4 ? '타임어택 ' + stageCfg(4).sec + '초' : s.name; }
+function activeStages() { return STAGES.filter(function (s) { return stageCfg(s.n).on; }); }
+function activeStars() { var t = 0; activeStages().forEach(function (s) { if (prog.best[s.n]) t += prog.best[s.n].stars; }); return t; }
 function renderMap(noFetch) {
   var pg = show('map');
   if (noFetch !== true) fetchConfig();
+  var act = activeStages();
   pg.appendChild(h('div', { class: 'card topbar' },
     h('span', { class: 'pill bl', text: whoText() }), h('b', { style: 'font-size:44px', text: P.name }), h('span', { style: 'flex:1' }),
     '총점 ', h('b', { style: 'font-size:54px', id: 'mapTotal', text: fmt(totalScore()) }), '점 ',
-    h('span', { class: 'pill', text: '별 ' + totalStars() + ' / 12' })));
+    h('span', { class: 'pill', id: 'mapStars', text: '별 ' + activeStars() + ' / ' + act.length * 3 })));
   pg.appendChild(h('h2', { class: 'pagehead', text: '스테이지를 골라요' }));
   pg.appendChild(h('p', { class: 'pagesub', text: '노란 카드를 눌러서 도전!' }));
   var curN = 0;
-  STAGES.forEach(function (s) { if (!curN && unlocked(s.n) && !prog.best[s.n]) curN = s.n; });
-  var row = h('div', { class: 'stages' });
-  STAGES.forEach(function (s) {
+  act.forEach(function (s) { if (!curN && unlocked(s.n) && !prog.best[s.n]) curN = s.n; });
+  var row = h('div', { class: 'stages', id: 'stages' });
+  act.forEach(function (s) {
     var open = unlocked(s.n), best = prog.best[s.n], cleared = !!best, isCur = s.n === curN;
     var btn = h('button', { class: 'btn ' + (!open ? 'white' : cleared ? 'green' : 'red'), text: !open ? '잠김' : cleared ? '다시 하기' : '도전!', 'data-stage': s.n, disabled: !open });
     if (!open) btn.style.cssText = 'background:#ccc;color:#777';
     var card = h('div', { class: 'card st' + (isCur ? ' cur' : '') + (!open ? ' lock' : ''), 'data-stage': s.n },
       isCur ? h('div', { class: 'hand', text: '여기 눌러요!' }) : null,
-      h('span', { class: 'no', style: !open ? 'background:#ccc' : '', text: 'STAGE ' + s.n }),
+      h('div', { class: 'stno' }, h('span', { class: 'no', style: !open ? 'background:#ccc' : '', text: 'STAGE ' + s.n }), h('span', { class: 'bitbadge', text: stageCfg(s.n).bits + '비트' })),
       icon(s.ic, 'ic'), h('h3', { text: stageTitle(s) }), h('p', { text: cleared ? '최고 ' + fmt(best.score) + '점' : s.sub }),
       starsEl(best ? best.stars : 0), btn);
     if (open) btn.addEventListener('click', function () { renderIntro(s.n); });
@@ -409,17 +451,20 @@ function renderMap(noFetch) {
 
 /* ---------- 3. 방법 안내 ---------- */
 function introData(n) {
+  var c = stageCfg(n), B = c.bits, vals = valsOf(B).join(', ');
+  var pws = []; for (var e = 0; e < Math.min(B, 4); e++) pws.push(pw(e) + '=' + Math.pow(2, e));
+  var pwLine = '자릿값은 <b>2를 거듭제곱</b>한 수예요: ' + pws.join(', ') + (B > 4 ? ' ...' : '');
   return {
-    1: ['전구를 눌러서 켜고 꺼요', ['전구는 <b>8, 4, 2, 1</b> 자릿값을 가져요', '켠 전구는 <b>1</b>, 끈 전구는 <b>0</b>', '켠 전구의 자릿값을 더해서 목표 수를 만들어요'], CFG.stage.s1 + '문제'],
-    2: ['점 카드를 뒤집어요', ['카드에는 <b>8, 4, 2, 1</b>개의 점이 있어요', '앞면은 <b>1</b>, 뒷면은 <b>0</b>', '카드로 수를 만들고, 카드를 보고 수를 읽어요'], CFG.stage.s2 + '문제'],
-    3: ['2로 계속 나눠요', ['몫이 <b>0</b>이 될 때까지 2로 나눠요', '나머지를 <b>아래에서 위로</b> 읽어요', '4자리가 되도록 앞에 0을 채워요'], CFG.stage.s3 + '문제'],
-    4: [CFG.stage.s4 + '초 안에 많이 풀어요', ['이진수와 십진수를 빠르게 바꿔요', '연속으로 맞히면 <b>콤보</b> 점수가 올라요', '틀리면 콤보가 끊겨요'], CFG.stage.s4 + '초']
+    1: ['전구를 눌러서 켜고 꺼요', ['전구는 <b>' + vals + '</b> 자릿값을 가져요', pwLine, '켠 전구는 <b>1</b>, 끈 전구는 <b>0</b>', '켠 전구의 자릿값을 더해서 목표 수를 만들어요'], c.count + '문제'],
+    2: ['점 카드를 뒤집어요', ['카드에는 <b>' + vals + '</b>개의 점이 있어요', pwLine, '앞면은 <b>1</b>, 뒷면은 <b>0</b>', '카드로 수를 만들고, 카드를 보고 수를 읽어요'], c.count + '문제'],
+    3: ['2로 계속 나눠요', ['몫이 <b>0</b>이 될 때까지 2로 나눠요', '나머지를 <b>아래에서 위로</b> 읽어요', B + '자리가 되도록 앞에 0을 채워요', pwLine], c.count + '문제'],
+    4: [c.sec + '초 안에 많이 풀어요', ['이진수와 십진수를 빠르게 바꿔요 (' + B + '비트, 1 ~ ' + maxOf(B) + ')', pwLine, '연속으로 맞히면 <b>콤보</b> 점수가 올라요', '틀리면 콤보가 끊겨요'], c.sec + '초']
   }[n];
 }
 function renderIntro(n) {
   var pg = show('intro'), s = STAGES[n - 1], d = introData(n); curIntroN = n;
-  var ul = h('ul', {}); d[1].forEach(function (t) { ul.appendChild(h('li', { html: t })); });
-  pg.appendChild(h('div', { style: 'text-align:center;margin-top:10px' }, h('span', { class: 'pill', style: 'font-size:48px', text: 'STAGE ' + n + '  ' + d[2] })));
+  var ul = h('ul', {}); d[1].forEach(function (t, i) { ul.appendChild(h('li', { html: t, class: i === 1 ? 'pwli' : null })); });
+  pg.appendChild(h('div', { style: 'text-align:center;margin-top:10px' }, h('span', { class: 'pill', style: 'font-size:48px', text: 'STAGE ' + n + '  ' + d[2] }), ' ', h('span', { class: 'pill bl bitbadge2', id: 'introBits', text: stageCfg(n).bits + '비트' })));
   pg.appendChild(h('div', { class: 'card intro' }, icon(s.ic, 'big'), h('div', {}, h('h2', { text: d[0] }), ul)));
   pg.appendChild(h('div', { class: 'introbtns' },
     h('button', { class: 'btn white', id: 'btnBack', text: '뒤로', onclick: renderMap }),
@@ -428,12 +473,13 @@ function renderIntro(n) {
 
 /* ---------- 스테이지 공통 마무리 ---------- */
 var BASE_PER_Q = { 1: 7.5, 2: 10, 3: 30 };
+function baseScore(B) { return Math.max(25, 100 + (B - 4) * 25); }
 function finishStage(n, S) {
-  var time = Math.round(S.time), score, stars, bonus = 0;
+  var time = Math.round(S.time), score, stars, bonus = 0, B = S.bits || 4;
   if (n === 4) {
-    var k4 = S.sec / 60; score = S.pts; stars = score >= Math.round(1500 * k4) ? 3 : score >= Math.round(800 * k4) ? 2 : 1;
+    var k4 = (S.sec / 60) * (B / 4); score = S.pts; stars = score >= Math.round(1500 * k4) ? 3 : score >= Math.round(800 * k4) ? 2 : 1;
   } else {
-    bonus = Math.max(0, Math.round(BASE_PER_Q[n] * S.N) - time) * 2; score = S.pts + bonus;
+    bonus = Math.max(0, Math.round(BASE_PER_Q[n] * S.N * B / 4) - time) * 2; score = S.pts + bonus;
     stars = S.wrong === 0 ? 3 : S.wrong <= 2 ? 2 : 1;
   }
   var prev = prog.best[n], isNew = !prev || score > prev.score;
@@ -497,42 +543,56 @@ function renderResult(n, R, rec) {
   send();
 }
 
+/* 열 배치 계산: 1720px 안에 N열, 열 너비는 maxW 이하 */
+function colLayout(N, maxW) {
+  var gap = N <= 4 ? 70 : N <= 6 ? 36 : 16, w = Math.min(maxW, Math.floor((1720 - (N - 1) * gap) / N));
+  return { gap: gap, w: w };
+}
+function pvpe(v, e) {
+  return [h('div', { class: 'pv', text: String(v) }), h('div', { class: 'pe', text: pw(e) })];
+}
+
 /* ---------- Stage 1: 전구 켜기 ---------- */
 function startS1() {
-  var N1 = CFG.stage.s1, pg = show('s1'), targets = shuffle(range(1, 15)).slice(0, N1), qi = 0;
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0, extra: 0, N: N1 };
-  var bits, target, locked, qWrong, clicks, qStart, wasOver;
+  var C = stageCfg(1), B = C.bits, pg = show('s1'), max = maxOf(B), targets = shuffle(range(1, max)).slice(0, Math.min(C.count, max)), N1 = targets.length, qi = 0;
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, extra: 0, N: N1, bits: B };
+  var bits, target, locked, qWrong, clicks, qStart, wasOver, base = baseScore(B);
+  setTier(pg, B);
   var goal = h('span', { class: 'card goal hd', id: 'goal' });
-  var bulbsBox = h('div', { class: 'bulbs', id: 'bulbs' });
-  var eq = h('div', { class: 'card eq hd', id: 'eq' });
+  var lay = colLayout(B, 230);
+  var bulbsBox = h('div', { class: 'bulbs', id: 'bulbs', style: 'gap:' + lay.gap + 'px' });
+  var l1 = h('div', { class: 'eql1 fit', 'data-max': '96', 'data-min': '30' }), l2 = h('div', { class: 'eql2 fit', id: 'eqexp', 'data-max': '54', 'data-min': '26' });
+  var eq = h('div', { class: 'card eq hd', id: 'eq' }, l1, l2);
   var dotsBox = h('div', { class: 'dots' }), pc = h('b', { class: 'hd', id: 'pc' });
   var hint = h('div', { class: 'hint', id: 'hint' });
-  pg.style.paddingTop = '60px';
+  pg.style.paddingTop = '50px';
   pg.appendChild(h('div', { class: 'goalrow' }, h('span', { class: 't', text: '목표' }), goal, h('span', { class: 't', text: '을 만들어라!' })));
   pg.appendChild(bulbsBox); pg.appendChild(eq);
   pg.appendChild(h('div', { class: 'progress' }, '문제 ', dotsBox, pc));
   pg.appendChild(hint);
-  var bulbBtns = [], bitEls = [];
-  VALS.forEach(function (v, i) {
-    var b = h('button', { class: 'bulb', type: 'button', 'data-i': i, 'aria-label': v + ' 전구', onclick: function () { toggle(i); } }, bulbSvg());
+  var bulbBtns = [], bitEls = [], vals = valsOf(B);
+  vals.forEach(function (v, i) {
+    var b = h('button', { class: 'bulb', type: 'button', 'data-i': i, 'aria-label': v + ' 전구', style: 'width:' + lay.w + 'px;height:' + Math.round(lay.w * 1.1) + 'px', onclick: function () { toggle(i); } }, bulbSvg());
     var bit = h('div', { class: 'bit', text: '0' });
     bulbBtns.push(b); bitEls.push(bit);
-    bulbsBox.appendChild(h('div', { class: 'bcol' }, b, h('div', { class: 'pv', text: String(v) }), bit));
+    bulbsBox.appendChild(h('div', { class: 'bcol', style: 'width:' + lay.w + 'px' }, b, pvpe(v, B - 1 - i), bit));
   });
   function render() {
     var sum = sumBits(bits);
     bulbBtns.forEach(function (b, i) { b.classList.toggle('on', !!bits[i]); });
     bitEls.forEach(function (b, i) { b.textContent = bits[i]; b.style.color = bits[i] ? '#d99a00' : '#aaa'; });
-    eq.innerHTML = '';
+    l1.innerHTML = '';
     bits.forEach(function (b, i) {
-      eq.appendChild(h('span', { class: b ? '' : 'z', text: String(b ? VALS[i] : 0) }));
-      if (i < 3) eq.appendChild(h('span', { style: 'margin:0 22px', text: '+' }));
+      l1.appendChild(h('span', { class: b ? '' : 'z', text: String(b ? vals[i] : 0) }));
+      if (i < B - 1) l1.appendChild(h('span', { class: 'op', text: '+' }));
     });
-    eq.appendChild(h('span', { style: 'margin:0 22px', text: '=' }));
-    eq.appendChild(h('span', { class: 'sum ' + (sum === target ? 'ok' : sum > target ? 'big' : 'no'), id: 'sum', text: String(sum) }));
+    l1.appendChild(h('span', { class: 'op', text: '=' }));
+    l1.appendChild(h('span', { class: 'sum ' + (sum === target ? 'ok' : sum > target ? 'big' : 'no'), id: 'sum', text: String(sum) }));
+    l2.textContent = eqExp(bits);
+    refit(eq);
   }
   function newQ() {
-    target = targets[qi]; bits = [0, 0, 0, 0]; locked = false; qWrong = 0; clicks = 0; wasOver = false; qStart = performance.now();
+    target = targets[qi]; bits = []; for (var z = 0; z < B; z++) bits.push(0); locked = false; qWrong = 0; clicks = 0; wasOver = false; qStart = performance.now();
     goal.textContent = target; hint.textContent = '전구를 눌러서 켜고 꺼요'; hint.className = 'hint';
     dotsBox.replaceWith(dotsBox = dotsEl(N1, qi)); pc.textContent = (qi + 1) + ' / ' + N1;
     render();
@@ -550,9 +610,9 @@ function startS1() {
   }
   function solve() {
     locked = true; S.time += (performance.now() - qStart) / 1000;
-    S.pts += qWrong === 0 ? 100 : 50; S.correct++; S.extra += Math.max(0, clicks - pop(target));
+    S.pts += qWrong === 0 ? base : Math.round(base / 2); S.correct++; S.extra += Math.max(0, clicks - pop(target));
     dotsBox.replaceWith(dotsBox = dotsEl(N1, qi + 1));
-    banner('정답!', eqText(bits), 1500, function () { qi++; if (qi >= N1) finishStage(1, S); else newQ(); });
+    banner('정답!', eqText(bits), 1500, function () { qi++; if (qi >= N1) finishStage(1, S); else newQ(); }, eqExp(bits));
   }
   newQ();
 }
@@ -561,36 +621,55 @@ function startS1() {
 function dotsSvg(n) {
   var NS = 'http://www.w3.org/2000/svg', s = document.createElementNS(NS, 'svg');
   s.setAttribute('viewBox', '0 0 100 130');
-  var pos = { 1: [[50, 65]], 2: [[50, 38], [50, 92]], 4: [[30, 38], [70, 38], [30, 92], [70, 92]],
-    8: [[30, 20], [70, 20], [30, 51], [70, 51], [30, 82], [70, 82], [30, 113], [70, 113]] }[n];
+  var pos, rad;
+  var fixed = { 1: [[50, 65]], 2: [[50, 38], [50, 92]], 4: [[30, 38], [70, 38], [30, 92], [70, 92]],
+    8: [[30, 20], [70, 20], [30, 51], [70, 51], [30, 82], [70, 82], [30, 113], [70, 113]] };
+  if (fixed[n]) { pos = fixed[n]; rad = n === 8 ? 10 : 13; }
+  else {
+    // 점이 가장 크게 들어가는 열 수를 고른다 (격자)
+    var bestC = 1, bestCell = 0, c, r, cell;
+    for (c = 1; c <= n; c++) { r = Math.ceil(n / c); cell = Math.min(100 / c, 130 / r); if (cell > bestCell + 0.01) { bestCell = cell; bestC = c; } }
+    c = bestC; r = Math.ceil(n / c); cell = bestCell; rad = cell * 0.34;
+    var x0 = (100 - c * cell) / 2 + cell / 2, y0 = (130 - r * cell) / 2 + cell / 2;
+    pos = [];
+    for (var i = 0; i < n; i++) {
+      var row = Math.floor(i / c), col = i % c, inRow = (row === r - 1) ? n - row * c : c;
+      var off = (c - inRow) * cell / 2; // 마지막 줄은 가운데 정렬
+      pos.push([x0 + col * cell + off, y0 + row * cell]);
+    }
+  }
   pos.forEach(function (p) {
-    var c = document.createElementNS(NS, 'circle');
-    c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]); c.setAttribute('r', n === 8 ? 10 : 13); c.setAttribute('fill', '#111'); s.appendChild(c);
+    var ci = document.createElementNS(NS, 'circle');
+    ci.setAttribute('cx', p[0].toFixed(1)); ci.setAttribute('cy', p[1].toFixed(1)); ci.setAttribute('r', rad.toFixed(1)); ci.setAttribute('fill', '#111'); s.appendChild(ci);
   });
   return s;
 }
 function startS2() {
-  var N2 = CFG.stage.s2, pg = show('s2'), targets = shuffle(range(1, 15)).slice(0, N2), qi = 0;
-  while (targets.length < N2) { var cand = 1 + Math.floor(Math.random() * 15); if (cand !== targets[targets.length - 1]) targets.push(cand); }
+  var C = stageCfg(2), B = C.bits, N2 = C.count, max = maxOf(B), pg = show('s2'), targets = shuffle(range(1, max)).slice(0, N2), qi = 0;
+  while (targets.length < N2) { var cand = 1 + Math.floor(Math.random() * max); if (cand !== targets[targets.length - 1]) targets.push(cand); }
   var typeArr = []; for (var ti = 0; ti < N2; ti++) typeArr.push(ti < Math.ceil(N2 / 2) ? 'A' : 'B');
   var types = shuffle(typeArr);
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N2 };
-  var bits, target, type, locked, qWrong, qStart;
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N2, bits: B };
+  var bits, target, type, locked, qWrong, qStart, base = baseScore(B), zero = function () { var a = []; for (var z = 0; z < B; z++) a.push(0); return a; };
   var dotsBox = h('div', { class: 'dots' }), pc = h('b', { class: 'hd' });
-  pg.style.paddingTop = '50px';
-  var top = h('div', {}), cardsBox = h('div', { class: 'cards', id: 'cards' }), act = h('div', { class: 's2act' }), sol = h('div', { class: 'sol', id: 'sol' });
+  setTier(pg, B);
+  pg.style.paddingTop = '44px';
+  var lay = colLayout(B, 220), cardW = lay.w - 20, cardH = Math.round(cardW * 1.2), vals = valsOf(B);
+  var top = h('div', {}), cardsBox = h('div', { class: 'cards', id: 'cards', style: 'gap:' + lay.gap + 'px' }), act = h('div', { class: 's2act' });
+  var sol1 = h('div', { class: 'sl1 fit', 'data-max': '52', 'data-min': '26' }), sol2 = h('div', { class: 'sl2 fit', 'data-max': '40', 'data-min': '24' }), sol = h('div', { class: 'sol', id: 'sol' }, sol1, sol2);
   pg.appendChild(top); pg.appendChild(cardsBox); pg.appendChild(sol); pg.appendChild(act);
   pg.appendChild(h('div', { class: 'progress' }, '문제 ', dotsBox, pc));
   var cardEls = [], bitEls = [];
+  function setSol(b) { sol1.textContent = b ? '풀이  ' + eqText(b) : ''; sol2.textContent = b ? eqExp(b) : ''; if (b) refit(sol); }
   function drawCards(interactive) {
     cardsBox.innerHTML = ''; cardEls = []; bitEls = [];
-    VALS.forEach(function (v, i) {
-      var c = h('button', { class: 'fcard' + (interactive ? '' : ' static') + (bits[i] ? ' on' : ''), type: 'button', 'data-i': i, 'aria-label': v + '점 카드' },
+    vals.forEach(function (v, i) {
+      var c = h('button', { class: 'fcard' + (interactive ? '' : ' static') + (bits[i] ? ' on' : ''), type: 'button', 'data-i': i, 'aria-label': v + '점 카드', style: 'width:' + cardW + 'px;height:' + cardH + 'px' },
         h('div', { class: 'fin' }, h('div', { class: 'ff front' }, dotsSvg(v)), h('div', { class: 'ff back' })));
       if (interactive) c.addEventListener('click', function () { if (locked) return; bits[i] ^= 1; refresh(); });
       var bit = h('div', { class: 'bit' });
       cardEls.push(c); bitEls.push(bit);
-      cardsBox.appendChild(h('div', { class: 'ccol' }, c, h('div', { class: 'pv', text: String(v) }), bit));
+      cardsBox.appendChild(h('div', { class: 'ccol', style: 'width:' + lay.w + 'px' }, c, pvpe(v, B - 1 - i), bit));
     });
     refresh();
   }
@@ -599,20 +678,23 @@ function startS2() {
     bitEls.forEach(function (b, i) { b.textContent = bits[i]; b.style.color = bits[i] ? '#d99a00' : '#aaa'; });
   }
   function newQ() {
-    target = targets[qi]; type = types[qi]; locked = false; qWrong = 0; qStart = performance.now(); sol.textContent = ''; act.innerHTML = ''; act.style.display = ''; top.innerHTML = '';
+    target = targets[qi]; type = types[qi]; locked = false; qWrong = 0; qStart = performance.now(); setSol(null); act.innerHTML = ''; act.style.display = ''; top.innerHTML = '';
     dotsBox.replaceWith(dotsBox = dotsEl(N2, qi)); pc.textContent = (qi + 1) + ' / ' + N2;
     if (type === 'A') {
-      bits = [0, 0, 0, 0];
+      bits = zero();
       top.appendChild(h('div', { class: 'goalrow' }, h('span', { class: 't', text: '목표' }), h('span', { class: 'card goal hd', id: 'goal', text: String(target) }), h('span', { class: 't', text: '을 만들어라!' })));
       top.appendChild(h('div', { class: 'qlab', text: '카드를 눌러 뒤집어요 (앞면 1, 뒷면 0)' }));
       drawCards(true);
       act.appendChild(h('button', { class: 'btn green', id: 'btnCheck', text: '확인', onclick: checkA }));
     } else {
-      bits = bits4(target);
+      bits = bitsOf(target, B);
       top.appendChild(h('div', { class: 'goalrow' }, h('span', { class: 't', style: 'font-size:80px', text: '카드가 나타내는 수는?' })));
       top.appendChild(h('div', { class: 'qlab', text: '앞면은 1, 뒷면은 0이에요' }));
       drawCards(false);
-      var opts = [target]; while (opts.length < 4) { var x = Math.floor(Math.random() * 16); if (opts.indexOf(x) < 0 && x !== 0) opts.push(x); }
+      // 4지선다: 정답과 1비트 차이 나는 수 위주
+      var opts = [target];
+      shuffle(range(0, B - 1)).forEach(function (i) { var x = target ^ (1 << i); if (opts.length < 4 && x >= 1 && x <= max && opts.indexOf(x) < 0) opts.push(x); });
+      while (opts.length < 4) { var x2 = 1 + Math.floor(Math.random() * max); if (opts.indexOf(x2) < 0) opts.push(x2); }
       var ch = h('div', { class: 'choices', id: 'choices' });
       shuffle(opts).forEach(function (o) {
         ch.appendChild(h('button', { class: 'btn', type: 'button', 'data-v': o, text: String(o), onclick: function (ev) { pickB(o, ev.currentTarget); } }));
@@ -622,19 +704,19 @@ function startS2() {
   }
   function correct() {
     locked = true; S.time += (performance.now() - qStart) / 1000;
-    S.pts += qWrong === 0 ? 100 : 50; S.correct++;
+    S.pts += qWrong === 0 ? base : Math.round(base / 2); S.correct++;
     dotsBox.replaceWith(dotsBox = dotsEl(N2, qi + 1));
-    banner('정답!', eqText(bits4(target)), 1500, function () { qi++; if (qi >= N2) finishStage(2, S); else newQ(); });
+    banner('정답!', eqText(bitsOf(target, B)), 1500, function () { qi++; if (qi >= N2) finishStage(2, S); else newQ(); }, eqExp(bitsOf(target, B)));
   }
   function wrong() {
-    qWrong++; S.wrong++; sfx.ng(); sol.textContent = '풀이  ' + eqText(bits4(target)); replay(cardsBox, 'shake');
+    qWrong++; S.wrong++; sfx.ng(); setSol(bitsOf(target, B)); replay(cardsBox, 'shake');
   }
   function checkA() {
     if (locked) return;
     if (sumBits(bits) === target) correct();
     else {
       wrong(); locked = true;
-      later(function () { bits = [0, 0, 0, 0]; sol.textContent = ''; locked = false; refresh(); }, 2200);
+      later(function () { bits = zero(); setSol(null); locked = false; refresh(); }, 2200);
     }
   }
   function pickB(v, btn) {
@@ -646,12 +728,15 @@ function startS2() {
 
 /* ---------- Stage 3: 나눗셈 사다리 ---------- */
 function startS3() {
-  var N3 = CFG.stage.s3, pg = show('s3'), targets = shuffle(range(5, 15)).slice(0, N3), qi = 0;
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N3 };
-  var N, ns, qs, rs, k, step, phase, readIdx, slots, qWrong, qStart, busy, usedR;
-  pg.style.paddingTop = '50px';
+  var C = stageCfg(3), B = C.bits, N3 = C.count, rg = s3Range(B), pg = show('s3'), targets = shuffle(range(rg[0], rg[1])).slice(0, N3), qi = 0;
+  N3 = targets.length;
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N3, bits: B }, base = baseScore(B);
+  var N, ns, qs, rs, k, step, phase, readIdx, slots, qWrong, qStart, busy, usedR, qbuf = '';
+  setTier(pg, B);
+  pg.style.paddingTop = '44px';
   var goalBox = h('div', { class: 'goalrow' });
-  var ladder = h('div', { class: 'card ladder', id: 'ladder' });
+  var ladH = B <= 4 ? 690 : 740, f = Math.min(1, (ladH - 100) / ((B + 1) * 104));
+  var ladder = h('div', { class: 'card ladder', id: 'ladder', style: 'height:' + ladH + 'px;--f:' + f.toFixed(3) });
   var msg = h('div', { class: 'card msg', id: 's3msg' });
   var padBox = h('div', { class: 's3pad none', id: 's3pad' });
   var hintLine = h('div', { class: 'hintline', id: 's3hint' });
@@ -664,7 +749,7 @@ function startS3() {
   function newQ() {
     N = targets[qi]; ns = [N]; qs = []; rs = [];
     var x = N; while (x > 0) { qs.push(Math.floor(x / 2)); rs.push(x % 2); x = Math.floor(x / 2); ns.push(x); }
-    k = rs.length; step = 0; phase = 'q'; readIdx = k - 1; slots = [null, null, null, null]; qWrong = 0; busy = false; usedR = []; hintLine.textContent = '';
+    k = rs.length; step = 0; phase = 'q'; readIdx = k - 1; slots = []; for (var z = 0; z < B; z++) slots.push(null); qWrong = 0; busy = false; usedR = []; hintLine.textContent = ''; qbuf = '';
     qStart = performance.now();
     goalBox.innerHTML = '';
     goalBox.appendChild(h('span', { class: 'card goal hd', style: 'font-size:90px;padding:0 44px', text: String(N) }));
@@ -678,11 +763,10 @@ function startS3() {
     ladder.appendChild(h('div', { class: 'lt', text: '2로 나누기' }));
     var reading = phase === 'read' || phase === 'fill0' || phase === 'done';
     for (var i = 0; i <= step && i < k; i++) {
-      var row = h('div', { class: 'lrow' }, h('span', { class: 'dv', text: '2' }), h('span', { class: 'par', text: ')' }), h('span', { class: 'dd', text: String(ns[i]) }), h('span', { class: 'dts', text: '···' }));
+      var row = h('div', { class: 'lrow' }, h('span', { class: 'dv', text: '2' }), h('span', { class: 'par', text: ')' }), h('span', { class: 'dd', text: String(ns[i]) }), h('span', { class: 'dts', text: '\u00b7\u00b7\u00b7' }));
       var rDone = i < step || reading;
       if (rDone) {
         if (phase === 'read') {
-          var pickable = !usedR[i] ;
           var b = h('button', { class: 'rr' + (rs[i] ? ' r1' : '') + (usedR[i] ? ' used' : ''), type: 'button', 'data-ri': i, text: String(rs[i]), onclick: function (ev) { pickR(+ev.currentTarget.dataset.ri, ev.currentTarget); } });
           row.appendChild(b);
         } else row.appendChild(h('span', { class: 'rr' + (rs[i] ? ' r1' : ''), text: String(rs[i]) }));
@@ -691,7 +775,7 @@ function startS3() {
     }
     // 몫 줄
     if (!reading) {
-      if (phase === 'q') ladder.appendChild(h('div', { class: 'lrow' }, h('span', { class: 'dv' }), h('span', { class: 'par', text: ' ' }), h('span', { class: 'dd bare' }, h('span', { class: 'slot act', id: 'quoSlot', text: '?' }))));
+      if (phase === 'q') ladder.appendChild(h('div', { class: 'lrow' }, h('span', { class: 'dv' }), h('span', { class: 'par', text: ' ' }), h('span', { class: 'dd bare' }, h('span', { class: 'slot act wide', id: 'quoSlot', text: qbuf || '?' }))));
       else if (qs[step] === 0) ladder.appendChild(h('div', { class: 'lrow' }, h('span', { class: 'dv' }), h('span', { class: 'par', text: ' ' }), h('span', { class: 'dd bare', text: '0' })));
     } else {
       ladder.appendChild(h('div', { class: 'lrow' }, h('span', { class: 'dv' }), h('span', { class: 'par', text: ' ' }), h('span', { class: 'dd bare', text: '0' })));
@@ -702,36 +786,47 @@ function startS3() {
     // 메시지/패드
     padBox.innerHTML = ''; padBox.className = 's3pad none';
     if (phase === 'q') {
-      msg.textContent = ns[step] + ' ÷ 2 의 몫은?';
+      msg.textContent = ns[step] + ' \u00f7 2 \uc758 몫은?';
       padBox.className = 's3pad digits';
       range(0, 9).forEach(function (d) { padBox.appendChild(h('button', { class: 'btn', type: 'button', 'data-d': d, text: String(d), style: 'background:' + ['#fff', '#FFE27A', '#9CC2FF', '#9BE6B4'][d % 4], onclick: function () { answerQ(d); } })); });
     } else if (phase === 'r') {
-      msg.textContent = ns[step] + ' ÷ 2 = ' + qs[step] + ' ··· 나머지는?';
+      msg.textContent = ns[step] + ' \u00f7 2 = ' + qs[step] + ' \u00b7\u00b7\u00b7 \ub098\uba38\uc9c0\ub294?';
       padBox.className = 's3pad rem';
       [0, 1].forEach(function (d) { padBox.appendChild(h('button', { class: 'btn ' + (d ? 'red' : 'blue'), type: 'button', 'data-d': d, text: String(d), onclick: function () { answerR(d); } })); });
     } else if (phase === 'read') {
       msg.textContent = '나머지를 아래에서 위로 읽어요! 맨 아래 나머지부터 눌러요';
     } else if (phase === 'fill0') {
-      msg.textContent = '4자리로 맞추려면 앞에 0을 채워요';
+      msg.textContent = B + '자리로 맞추려면 앞에 0을 채워요';
       padBox.className = 's3pad one';
       padBox.appendChild(h('button', { class: 'btn green', id: 'btnFill0', type: 'button', text: '앞에 0 채우기', onclick: fill0 }));
     } else if (phase === 'done') {
       msg.textContent = N + ' = ' + slots.join('') + '(2)';
     }
-    // 결과 칸
+    // 결과 칸 (자릿값 + 지수 표기)
     resBox.innerHTML = '';
-    resBox.appendChild(h('span', { text: '이진수' }));
-    slots.forEach(function (v, i) { resBox.appendChild(h('span', { class: 'slot' + (v === null ? '' : ' fill' + (v ? ' b1' : '')), 'data-slot': i, text: v === null ? '' : String(v) })); });
-    resBox.appendChild(h('span', { style: 'font-size:34px', text: '(2)' }));
+    resBox.appendChild(h('span', { class: 'rlab', text: '이진수' }));
+    slots.forEach(function (v, i) {
+      resBox.appendChild(h('span', { class: 'rcell' },
+        h('span', { class: 'slot' + (v === null ? '' : ' fill' + (v ? ' b1' : '')), 'data-slot': i, text: v === null ? '' : String(v) }),
+        h('span', { class: 'rpv', text: String(Math.pow(2, B - 1 - i)) }),
+        h('span', { class: 'rpe', text: pw(B - 1 - i) })));
+    });
+    resBox.appendChild(h('span', { class: 'rlab', text: '(2)' }));
   }
   function wrongMark(el, text) {
     qWrong++; S.wrong++; sfx.ng(); if (el) replay(el, 'shake'); hintLine.textContent = text;
   }
+  // 몫 입력: 한 자리씩 눌러 쌓고, 정답과 같아지면 통과, 정답 자릿수만큼 눌렀는데 다르면 오답
   function answerQ(d) {
     if (busy) return;
-    var n = ns[step];
-    if (d === qs[step]) { hintLine.textContent = ''; sfx.ok(); phase = 'r'; draw(); }
-    else wrongMark($('#quoSlot'), n + ' 안에 2가 몇 번 들어갈까요? 2 × ? 가 ' + n + '을 넘지 않는 가장 큰 수를 찾아요');
+    var n = ns[step], want = qs[step];
+    qbuf += String(d);
+    var v = parseInt(qbuf, 10);
+    if (v === want && (qbuf.length === String(want).length)) { hintLine.textContent = ''; sfx.ok(); qbuf = ''; phase = 'r'; draw(); return; }
+    if (qbuf.length >= String(want).length) {
+      qbuf = ''; var qs0 = $('#quoSlot'); if (qs0) qs0.textContent = '?';
+      wrongMark(qs0, n + ' 안에 2가 몇 번 들어갈까요? 2 \u00d7 ? 가 ' + n + '을 넘지 않는 가장 큰 수를 찾아요');
+    } else { var qe = $('#quoSlot'); if (qe) qe.textContent = qbuf; }
   }
   function answerR(d) {
     if (busy) return;
@@ -739,48 +834,50 @@ function startS3() {
     if (d === rs[step]) {
       hintLine.textContent = ''; sfx.ok();
       if (qs[step] === 0) { phase = 'read'; step = k - 1; draw(); }
-      else { step++; phase = 'q'; draw(); }
-    } else wrongMark($('#remSlot'), '나머지 = ' + n + ' - 2 × ' + qs[step] + ' = ?');
+      else { step++; phase = 'q'; qbuf = ''; draw(); }
+    } else wrongMark($('#remSlot'), '나머지 = ' + n + ' - 2 \u00d7 ' + qs[step] + ' = ?');
   }
   function pickR(i, btn) {
     if (busy || usedR[i]) return;
     if (i !== readIdx) { wrongMark(btn, '맨 아래 나머지부터, 아래에서 위로 읽어요!'); return; }
     busy = true; hintLine.textContent = ''; sfx.ok();
-    var slotIdx = (4 - k) + (k - 1 - i), target = $('[data-slot="' + slotIdx + '"]', resBox);
+    var slotIdx = (B - k) + (k - 1 - i), target = $('[data-slot="' + slotIdx + '"]', resBox);
     var from = stagePos(btn), to = stagePos(target);
-    var chip = h('div', { class: 'chipfly rr' + (rs[i] ? ' r1' : ''), text: String(rs[i]), style: 'left:' + from.x + 'px;top:' + from.y + 'px' });
+    var chip = h('div', { class: 'chipfly rr' + (rs[i] ? ' r1' : ''), text: String(rs[i]), style: 'left:' + from.x + 'px;top:' + from.y + 'px;width:' + from.w + 'px;height:' + from.h + 'px;font-size:' + Math.round(70 * f) + 'px' });
     stageEl.appendChild(chip);
     usedR[i] = true; btn.classList.add('used');
-    requestAnimationFrame(function () { requestAnimationFrame(function () { chip.style.left = (to.x - 0) + 'px'; chip.style.top = (to.y - 0) + 'px'; }); });
+    requestAnimationFrame(function () { requestAnimationFrame(function () { chip.style.left = to.x + 'px'; chip.style.top = to.y + 'px'; }); });
     later(function () {
       chip.remove(); slots[slotIdx] = rs[i]; readIdx--; busy = false;
-      if (readIdx < 0) { phase = k < 4 ? 'fill0' : 'done'; draw(); if (phase === 'done') finishQ(); } else draw();
+      if (readIdx < 0) { phase = k < B ? 'fill0' : 'done'; draw(); if (phase === 'done') finishQ(); } else draw();
     }, 650);
   }
   function fill0() {
-    for (var i = 0; i < 4; i++) if (slots[i] === null) slots[i] = 0;
+    for (var i = 0; i < B; i++) if (slots[i] === null) slots[i] = 0;
     phase = 'done'; draw(); finishQ();
   }
   function finishQ() {
     busy = true; S.time += (performance.now() - qStart) / 1000;
-    S.pts += qWrong === 0 ? 100 : 50; S.correct++;
+    S.pts += qWrong === 0 ? base : Math.round(base / 2); S.correct++;
     dotsBox.replaceWith(dotsBox = dotsEl(N3, qi + 1));
-    banner('정답!', N + ' = ' + slots.join('') + '(2)', 1700, function () { qi++; if (qi >= N3) finishStage(3, S); else newQ(); });
+    banner('정답!', N + ' = ' + slots.join('') + '(2)', 1700, function () { qi++; if (qi >= N3) finishStage(3, S); else newQ(); }, eqExp(slots));
   }
   newQ();
 }
 
 /* ---------- Stage 4: 타임어택 ---------- */
 function startS4() {
-  var SEC = CFG.stage.s4, pg = show('s4'); pg.classList.remove('warn');
-  var S = { pts: 0, correct: 0, wrong: 0, time: SEC, combo: 0, sec: SEC };
-  var streak = 0, qType, ans, bits, locked = true, over = false, endAt = 0, buf = '';
+  var C = stageCfg(4), B = C.bits, SEC = C.sec, MAXV = maxOf(B), MAXD = String(MAXV).length, pg = show('s4'); pg.classList.remove('warn'); setTier(pg, B);
+  var S = { pts: 0, correct: 0, wrong: 0, time: SEC, combo: 0, sec: SEC, bits: B };
+  var streak = 0, qType, ans, bits, locked = true, over = false, endAt = 0, buf = '', kpd = null, vals = valsOf(B);
   var score = h('span', { class: 'v', id: 'score', text: '0' }), okc = h('span', { class: 'v', id: 'okc', style: 'color:var(--green)', text: '0' }), ngc = h('span', { class: 'v', id: 'ngc', style: 'color:var(--red)', text: '0' });
   pg.appendChild(h('div', { class: 'hud' },
     h('div', { class: 'card' }, h('span', { text: '점수' }), score), h('div', { class: 'card' }, h('span', { text: '정답' }), okc), h('div', { class: 'card' }, h('span', { text: '오답' }), ngc)));
   var tfill = h('i', { id: 'tfill' }), tbar = h('div', { class: 'tbar', id: 'tbar' }, tfill), tnum = h('div', { class: 'tnum', id: 'tnum', text: String(SEC) });
   pg.appendChild(h('div', { class: 'timer' }, tbar, tnum));
-  var combo = h('div', { class: 'combo dim', id: 'combo', text: 'COMBO' }), qlab = h('div', { class: 'lab', id: 'qlab' }), q = h('div', { class: 'q', id: 'q' }), fb = h('div', { class: 'fb', id: 'fb' });
+  var combo = h('div', { class: 'combo dim', id: 'combo', text: 'COMBO' }), qlab = h('div', { class: 'lab', id: 'qlab' }), q = h('div', { class: 'q fit', id: 'q', 'data-max': '140', 'data-min': '56' });
+  var fb1 = h('div', { class: 'fb1 fit', 'data-max': '62', 'data-min': '26' }), fb2 = h('div', { class: 'fb2 fit', 'data-max': '40', 'data-min': '22' }), fb = h('div', { class: 'fb', id: 'fb' }, fb1, fb2);
+  function setFb(cls, t1, t2) { fb.className = 'fb' + (cls ? ' ' + cls : ''); fb1.textContent = t1 || ''; fb2.textContent = t2 || ''; refit(fb); }
   var padWrap = h('div', { class: 'padwrap', id: 'padwrap' });
   pg.appendChild(h('div', { class: 'play' }, h('div', { class: 'card qcard' }, combo, qlab, q, fb), padWrap));
 
@@ -790,50 +887,80 @@ function startS4() {
     if (streak > 0) { combo.textContent = streak + '연속  x' + mult(); combo.classList.remove('dim'); replay(combo, 'bump'); }
     else { combo.textContent = 'COMBO'; combo.classList.add('dim'); }
   }
+  function showBuf() {
+    if (B >= 5) { if (kpd) kpd.textContent = buf || '?'; }
+    else setFb('', buf ? '입력: ' + buf : '', '');
+  }
+  function pushDigit(d) { if (locked || over) return; if (buf.length < MAXD) buf += String(d); showBuf(); }
+  function backspace() { if (locked || over) return; buf = buf.slice(0, -1); showBuf(); }
+  function submitBuf() { if (locked || over || !buf) return; var v = parseInt(buf, 10); buf = ''; showBuf(); answer(v, null); }
   function newQ() {
-    buf = ''; locked = false; fb.textContent = ''; fb.className = 'fb'; var prevAns = ans; do { ans = Math.floor(Math.random() * 16); } while (ans === prevAns); qType = Math.random() < 0.5 ? 'b2d' : 'd2b';
+    buf = ''; locked = false; setFb('', '', ''); kpd = null;
+    var prevAns = ans; do { ans = 1 + Math.floor(Math.random() * MAXV); } while (ans === prevAns && MAXV > 1);
+    qType = Math.random() < 0.5 ? 'b2d' : 'd2b';
     padWrap.innerHTML = '';
     if (qType === 'b2d') {
       qlab.textContent = '이진수를 십진수로!';
-      q.innerHTML = ''; q.appendChild(document.createTextNode(ans.toString(2).padStart(4, '0'))); q.appendChild(h('sub', { text: '(2)' })); q.appendChild(document.createTextNode(' = ?'));
-      var pad = h('div', { class: 'pad' });
-      range(0, 15).forEach(function (i) { pad.appendChild(h('button', { class: 'btn', type: 'button', 'data-n': i, text: String(i), style: 'background:' + ['#fff', '#FFE27A', '#9CC2FF', '#9BE6B4'][i % 4], onclick: function (ev) { answer(i, ev.currentTarget); } })); });
-      padWrap.appendChild(pad);
+      q.innerHTML = ''; q.appendChild(document.createTextNode(ans.toString(2).padStart(B, '0'))); q.appendChild(h('sub', { text: '(2)' })); q.appendChild(document.createTextNode(' = ?'));
+      if (B <= 4) {
+        var pad = h('div', { class: 'pad' });
+        range(0, MAXV).forEach(function (i) { pad.appendChild(h('button', { class: 'btn', type: 'button', 'data-n': i, text: String(i), style: 'background:' + ['#fff', '#FFE27A', '#9CC2FF', '#9BE6B4'][i % 4], onclick: function (ev) { answer(i, ev.currentTarget); } })); });
+        padWrap.appendChild(pad);
+      } else {
+        // 5비트 이상: 큰 숫자 키패드 + 입력창
+        kpd = h('div', { class: 'kpdisp', id: 'kpdisp', text: '?' });
+        var kp = h('div', { class: 'keypad', id: 'keypad' });
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 'del', 0, 'ok'].forEach(function (d) {
+          var bt;
+          if (d === 'del') bt = h('button', { class: 'btn white kdel', type: 'button', text: '지우기', onclick: backspace });
+          else if (d === 'ok') bt = h('button', { class: 'btn green kok', type: 'button', id: 'kpOk', text: '확인', onclick: submitBuf });
+          else bt = h('button', { class: 'btn', type: 'button', 'data-d': d, text: String(d), style: 'background:' + ['#fff', '#FFE27A', '#9CC2FF', '#9BE6B4'][d % 4], onclick: function () { pushDigit(d); } });
+          kp.appendChild(bt);
+        });
+        padWrap.appendChild(kpd); padWrap.appendChild(kp);
+      }
     } else {
-      bits = [0, 0, 0, 0];
+      bits = []; for (var z = 0; z < B; z++) bits.push(0);
       qlab.textContent = '십진수를 이진수로!';
       q.innerHTML = ''; q.appendChild(document.createTextNode(ans + ' = ?')); q.appendChild(h('sub', { text: '(2)' }));
-      var tg = h('div', { class: 'pad bits' });
-      VALS.forEach(function (v, i) {
-        var b = h('button', { class: 'btn', type: 'button', 'data-i': i, text: '0', onclick: function () { if (locked) return; bits[i] ^= 1; b.textContent = bits[i]; b.classList.toggle('on', !!bits[i]); } });
-        tg.appendChild(h('div', { class: 'tg' }, h('div', { class: 'pv', text: String(v) }), b));
+      var gap = B <= 4 ? 22 : B <= 6 ? 14 : 10, tw = Math.min(150, Math.floor((910 - (B - 1) * gap) / B));
+      var tg = h('div', { class: 'pad bits', style: 'grid-template-columns:repeat(' + B + ',' + tw + 'px);gap:' + gap + 'px' });
+      vals.forEach(function (v, i) {
+        var b = h('button', { class: 'btn', type: 'button', 'data-i': i, text: '0', style: 'width:' + tw + 'px', onclick: function () { if (locked) return; bits[i] ^= 1; b.textContent = bits[i]; b.classList.toggle('on', !!bits[i]); } });
+        tg.appendChild(h('div', { class: 'tg', style: 'width:' + tw + 'px' }, pvpe(v, B - 1 - i), b));
       });
       padWrap.appendChild(tg);
       padWrap.appendChild(h('button', { class: 'btn green go', id: 'btnOk', type: 'button', text: '확인', onclick: function () { answer(parseInt(bits.join(''), 2), null); } }));
     }
+    refit(q.parentNode);
   }
   function answer(n, btn) {
     if (locked || over) return; locked = true;
     if (n === ans) {
       streak++; S.combo = Math.max(S.combo, streak); var gain = 100 * mult(); S.pts += gain; S.correct++;
-      fb.className = 'fb ok'; fb.textContent = '딩동! +' + gain; if (btn) btn.classList.add('ok');
+      setFb('ok', '딩동! +' + gain, ''); if (btn) btn.classList.add('ok');
       if (streak === 3 || streak === 6) sfx.combo(); else sfx.ok();
       updHud(); later(newQ, 350);
     } else {
       streak = 0; S.wrong++; sfx.ng();
-      fb.className = 'fb ng'; fb.textContent = qType === 'b2d' ? ans.toString(2).padStart(4, '0') + '(2) = ' + ans : ans + ' = ' + ans.toString(2).padStart(4, '0') + '(2)';
-      if (btn) btn.classList.add('ng'); replay(qcardEl(), 'shake'); updHud(); later(newQ, 800);
+      var bs = ans.toString(2).padStart(B, '0');
+      setFb('ng', qType === 'b2d' ? bs + '(2) = ' + ans : ans + ' = ' + bs + '(2)', eqExpShort(bitsOf(ans, B)));
+      if (btn) btn.classList.add('ng'); replay(qcardEl(), 'shake'); updHud(); later(newQ, 1300);
     }
   }
   function qcardEl() { return $('.qcard', pg); }
   function onKey(e) {
     if (locked || over) return;
     if (qType === 'b2d') {
-      if (/^[0-9]$/.test(e.key)) { buf += e.key; fb.className = 'fb'; fb.textContent = '입력: ' + buf; if (buf.length >= 2 || parseInt(buf + '0', 10) > 15) { var v = parseInt(buf, 10); buf = ''; answer(v, v <= 15 ? $('[data-n="' + v + '"]', pg) : null); } }
-      else if (e.key === 'Enter' && buf) { var v2 = parseInt(buf, 10); buf = ''; answer(v2, v2 <= 15 ? $('[data-n="' + v2 + '"]', pg) : null); }
-      else if (e.key === 'Backspace') { buf = buf.slice(0, -1); fb.textContent = buf ? '입력: ' + buf : ''; }
+      if (B >= 5) {
+        if (/^[0-9]$/.test(e.key)) pushDigit(e.key);
+        else if (e.key === 'Enter') submitBuf();
+        else if (e.key === 'Backspace') backspace();
+      } else if (/^[0-9]$/.test(e.key)) { buf += e.key; setFb('', '입력: ' + buf, ''); if (buf.length >= MAXD || parseInt(buf + '0', 10) > MAXV) { var v = parseInt(buf, 10); buf = ''; answer(v, v <= MAXV ? $('[data-n="' + v + '"]', pg) : null); } }
+      else if (e.key === 'Enter' && buf) { var v2 = parseInt(buf, 10); buf = ''; answer(v2, v2 <= MAXV ? $('[data-n="' + v2 + '"]', pg) : null); }
+      else if (e.key === 'Backspace') { buf = buf.slice(0, -1); setFb('', buf ? '입력: ' + buf : '', ''); }
     } else {
-      if (/^[1-4]$/.test(e.key)) { var bt = $('[data-i="' + (+e.key - 1) + '"]', pg); if (bt) bt.click(); }
+      if (/^[1-8]$/.test(e.key) && +e.key <= B) { var bt = $('[data-i="' + (+e.key - 1) + '"]', pg); if (bt) bt.click(); }
       else if (e.key === 'Enter') answer(parseInt(bits.join(''), 2), null);
     }
   }
@@ -848,7 +975,7 @@ function startS4() {
   }
   function end() {
     if (over) return; over = true; locked = true;
-    fb.className = 'fb ng'; fb.textContent = '시간 종료!'; sfx.go();
+    setFb('ng', '시간 종료!', ''); sfx.go();
     later(function () { finishStage(4, S); }, 1000);
   }
   // 카운트다운 후 시작

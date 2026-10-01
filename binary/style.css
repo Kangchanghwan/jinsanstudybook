@@ -332,3 +332,84 @@ button.rr.used{animation:none;box-shadow:none;background:#ddd;color:#888;cursor:
 
 .rkl1{display:flex;gap:10px;align-items:baseline;min-width:0;overflow:hidden}
 #rkPop .rkl1{flex:1}
+
+/* ===== v3: 지수 표기 / N비트 / 숫자 키패드 ===== */
+.pe{display:block;font:52px/1.1 'Jua','Apple SD Gothic Neo','Malgun Gothic','Arial',sans-serif;color:#222;margin-top:4px}
+.banner-s,#banner .s{display:block;width:1760px;text-align:center;white-space:nowrap}
+#banner .s2{font:44px 'Black Han Sans';color:#333;margin-top:2px}
+.stno{display:flex;gap:10px;align-items:center;justify-content:center}
+.bitbadge{font:30px 'Black Han Sans';background:var(--blue);color:#fff;border:4px solid var(--ink);border-radius:30px;padding:0 14px;white-space:nowrap}
+.bitbadge2{font-size:40px;vertical-align:top}
+.intro li.pwli{font-size:38px}
+.intro{min-height:560px}
+/* s1 */
+.bulbs{margin-top:28px}
+.bcol .pv{font-size:56px}
+.bit{font-size:96px}
+.eq{display:block;width:1500px;padding:8px 40px 10px}
+.eql1{font-size:96px;line-height:1.15;white-space:nowrap;text-align:center}
+.eql2{font-size:54px;line-height:1.2;white-space:nowrap;text-align:center;color:#444}
+.eql1 .op{margin:0 .22em}
+.eql1 .sum{margin-left:.15em}
+.t2 .eq,.t3 .eq{width:1720px}
+.t2 .bcol .pv{font-size:48px;padding:0 20px}.t3 .bcol .pv{font-size:42px;padding:0 12px}
+.t2 .bit{font-size:84px}.t3 .bit{font-size:72px}
+.t3 .bulb{margin-bottom:0}
+/* s2 */
+.cards{margin-top:10px}
+.ccol .pv{font-size:50px;margin-top:10px}
+.t2 .ccol .pv{font-size:46px;padding:0 20px}.t3 .ccol .pv{font-size:40px;padding:0 12px}
+.ccol .bit{font-size:78px}
+.t3 .ccol .bit{font-size:70px}
+.qlab{margin-top:8px;font-size:46px}
+.sol{height:108px;line-height:1.1;margin-top:2px}
+.sol .sl1{font-size:52px;white-space:nowrap;width:1720px;height:58px;line-height:58px}
+.sol .sl2{font-size:40px;white-space:nowrap;width:1720px;height:46px;line-height:46px;color:#333;font-family:'Jua','Black Han Sans',sans-serif}
+.s2act{min-height:104px}
+/* s3 */
+.ladder .lrow{height:calc(104px*var(--f,1));font-size:calc(80px*var(--f,1));gap:calc(14px*var(--f,1))}
+.ladder .lrow .dv{width:calc(60px*var(--f,1))}
+.ladder .lrow .par{font-size:calc(100px*var(--f,1))}
+.ladder .lrow .dd{line-height:calc(92px*var(--f,1));min-width:calc(130px*var(--f,1))}
+.ladder .lrow .dts{font-size:calc(50px*var(--f,1));width:calc(100px*var(--f,1))}
+.ladder .slot,.ladder .rr{width:calc(92px*var(--f,1));height:calc(92px*var(--f,1));font-size:calc(70px*var(--f,1))}
+.ladder .slot.wide{width:auto;min-width:calc(92px*var(--f,1));padding:0 8px}
+.ladder .lt{font-size:30px;margin-bottom:0}
+.s3main{margin-top:20px}
+.s3right{gap:16px}
+.s3right .msg{min-height:116px;padding:10px 24px;font-size:44px}
+.s3pad{min-height:268px}
+.s3pad.none{min-height:100px}
+.hintline{min-height:40px;font-size:32px}
+.resrow{gap:6px;padding:10px 12px;align-items:flex-start;font-size:34px}
+.resrow .rlab{align-self:center;font:34px 'Black Han Sans'}
+.rcell{display:flex;flex-direction:column;align-items:center;width:84px;flex:none}
+.rcell .slot{width:76px;height:76px;font-size:56px;border-width:5px}
+.rcell .rpv{font:30px 'Black Han Sans';margin-top:4px;line-height:1.1}
+.rcell .rpe{font:52px/1.1 'Jua','Apple SD Gothic Neo','Malgun Gothic','Arial',sans-serif;color:#222}
+.t1 .rcell{width:104px}
+.t1 .rcell .slot{width:96px;height:96px;font-size:66px}
+.t1 .rcell .rpv{font-size:36px}
+.t1 .resrow{gap:12px}
+/* s4 */
+.qcard .q{font-size:140px;margin-top:40px}
+.qcard .q sub{font-size:.4em}
+.fb{left:10px;right:10px;font:inherit}
+.fb .fb1{font:62px 'Black Han Sans';white-space:nowrap;width:100%;line-height:1.1}
+.fb .fb2{font:40px 'Black Han Sans';white-space:nowrap;width:100%;line-height:1.15;color:#444}
+.fb.ok .fb1{color:var(--green)}.fb.ng .fb1{color:var(--red)}
+.tg .pv{margin-top:0}
+.tg .pe{font-size:50px}
+.t2 .tg .pv{font-size:40px;padding:0 12px}.t3 .tg .pv{font-size:32px;padding:0 6px}
+.t2 .tg .pe{font-size:50px}.t3 .tg .pe{font-size:46px}
+.t2 .tg .btn,.t3 .tg .btn{height:170px;padding:0;font-size:90px}
+.padwrap .kpdisp{height:96px;border:6px solid var(--ink);border-radius:24px;background:#fffbe8;font:72px/84px 'Black Han Sans';text-align:center;margin-bottom:16px;box-shadow:6px 6px 0 var(--ink)}
+.keypad{display:grid;grid-template-columns:repeat(3,200px);grid-auto-rows:100px;gap:16px;justify-content:center}
+.keypad .btn{width:200px;height:90px;padding:0;font-size:60px}
+.keypad .btn.kdel,.keypad .btn.kok{font-size:44px}
+.padwrap .kpdisp{width:632px}
+.keypad{justify-content:flex-start}
+#pg-s1 .hint{bottom:32px}
+
+/* 한국어 단어 중간 줄바꿈 방지 */
+body{word-break:keep-all;overflow-wrap:break-word}

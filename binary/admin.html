@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>이진수 챌린지 설정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=7">
+<style>
+html,body{overflow:auto;height:auto;min-height:100%;background:var(--cream)}
+body{padding:28px 24px 60px}
+#adm{max-width:1280px;margin:0 auto}
+#adm h1{font:56px/1.15 'Black Han Sans','Jua',sans-serif;font-weight:400;margin-bottom:6px}
+#adm .sub{font-size:24px;color:#555;margin-bottom:22px}
+.adm-card{margin-bottom:26px;padding:22px 30px}
+.keybox{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.keybox .field{width:480px;max-width:100%;font-size:32px;height:72px}
+.keybox .btn{height:72px;font-size:32px}
+.errmsg{color:var(--red);font:30px 'Black Han Sans';margin-top:14px;min-height:36px}
+.strow{display:grid;grid-template-columns:150px 1fr 430px 1.1fr;gap:26px;align-items:center}
+.strow .nm{word-break:keep-all}
+.strow .nm{font:34px 'Black Han Sans';font-weight:400}
+.strow .nm small{display:block;font:22px 'Jua';color:#555;margin-top:4px}
+.sw{width:140px;height:64px;border:5px solid var(--ink);border-radius:36px;background:#ccc;cursor:pointer;font:30px 'Black Han Sans';box-shadow:0 6px 0 var(--ink);position:relative}
+.sw.on{background:var(--green);color:#fff}
+.sw.off{color:#555}
+.lbl{font-size:22px;color:#555;margin-bottom:6px}
+.chips{display:flex;gap:8px;flex-wrap:nowrap}
+.chips .chip{min-width:0;width:58px;height:62px;padding:0;font-size:30px;margin:0;border-width:4px}
+.chips .chip.sel{background:var(--blue);color:#fff}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper .sb{width:62px;height:62px;border:5px solid var(--ink);border-radius:16px;background:#fff;font:40px 'Black Han Sans';cursor:pointer;box-shadow:0 5px 0 var(--ink);padding:0}
+.stepper .sb:disabled{background:#ddd;color:#999;cursor:default}
+.stepper .val{min-width:96px;text-align:center;font:50px 'Black Han Sans'}
+.rng{font-size:24px;color:#444;margin-top:6px}
+.strow.disabled .ctl{opacity:.35;pointer-events:none}
+.actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.actions .btn{height:80px;font-size:36px}
+.okmsg{font:32px 'Black Han Sans';color:#0a7a30;margin-top:18px;min-height:40px}
+.foot{font-size:22px;color:#666;margin-top:14px}
+.confirm{display:inline-flex;gap:10px;align-items:center;font:30px 'Black Han Sans'}
+.confirm .btn{height:64px;font-size:28px;padding:0 28px}
+[hidden]{display:none!important}
+@media(max-width:900px){.strow{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="adm">
+  <h1>이진수 챌린지 설정</h1>
+  <p class="sub">선생님용 설정 페이지</p>
+  <section id="keyview" hidden>
+    <div class="card adm-card">
+      <p class="lbl" style="font-size:28px;color:var(--ink)">접근 키를 입력하세요</p>
+      <div class="keybox">
+        <input class="field" id="keyinp" type="password" autocomplete="off" placeholder="접근 키">
+        <button class="btn blue" id="keybtn" type="button">확인</button>
+      </div>
+      <div class="errmsg" id="keyerr"></div>
+    </div>
+  </section>
+  <section id="setview" hidden>
+    <div id="rows"></div>
+    <div class="card adm-card">
+      <div class="actions">
+        <button class="btn red" id="btnSave" type="button">저장</button>
+        <button class="btn white" id="btnDef" type="button">기본값으로</button>
+        <span class="confirm" id="defAsk" hidden>기본값으로 채울까요? (저장은 따로 눌러야 해요)
+          <button class="btn green" id="defYes" type="button">네</button>
+          <button class="btn white" id="defNo" type="button">취소</button></span>
+      </div>
+      <div class="errmsg" id="saveerr"></div>
+      <div class="okmsg" id="saveok"></div>
+      <div class="foot">변경 내용은 약 10초 안에 반영됩니다</div>
+    </div>
+  </section>
+</div>
+<script src="config.js?v=7"></script>
+<script src="admin.js?v=7"></script>
+</body>
+</html>
