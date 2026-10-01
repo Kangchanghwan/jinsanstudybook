@@ -231,9 +231,9 @@ button.rr.used{animation:none;box-shadow:none;background:#ddd;color:#888;cursor:
 .med{width:50px;height:50px;border:4px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font:30px 'Black Han Sans';margin-right:20px}
 .med.g{background:#FFC800}.med.s{background:#cfd6de}.med.br{background:#e08a4a}
 .medsp{width:70px}
-.barrow{display:flex;align-items:center;height:62px;font-size:38px;margin:2px 0}
+.barrow{display:flex;align-items:center;height:52px;font-size:34px;margin:1px 0}
 .barrow .cl{width:230px;font-family:'Black Han Sans';white-space:nowrap}
-.barrow .bar{height:54px;border:5px solid var(--ink);border-radius:18px;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;font:34px 'Black Han Sans';box-shadow:4px 4px 0 var(--ink);white-space:nowrap}
+.barrow .bar{height:44px;border:5px solid var(--ink);border-radius:18px;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;font:30px 'Black Han Sans';box-shadow:4px 4px 0 var(--ink);white-space:nowrap}
 .barrow .cn{margin-left:16px;font-size:30px;color:#444;white-space:nowrap}
 .barrow.me .cl{color:var(--red)}
 .barrow.me .bar{outline:6px solid var(--red)}
@@ -241,3 +241,7 @@ button.rr.used{animation:none;box-shadow:none;background:#ddd;color:#888;cursor:
 .empty{font-size:44px;text-align:center;margin-top:120px;color:#555}
 .sepline{border-top:5px dashed #999;margin:6px 0}
 .localtbl{margin-top:6px}
+
+/* 10개 반: 5열 2줄 */
+#classes{display:grid;grid-template-columns:repeat(5,150px);gap:14px 14px}
+#classes .chip{margin-right:0;min-width:0;width:150px}
