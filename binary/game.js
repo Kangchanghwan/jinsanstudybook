@@ -170,7 +170,7 @@ function sendRecord(rec) {
 }
 
 /* ---------- 1. 입장 ---------- */
-var entryCls = 1, forceNew = false;
+var entryCls = 0, forceNew = false;
 function renderEntry() {
   var pg = show('entry');
   var saved = LS.get('binq.profile', null);
@@ -186,7 +186,7 @@ function renderEntry() {
         h('button', { class: 'btn white', id: 'btnNew', text: '다른 사람으로 시작', onclick: function () { forceNew = true; renderEntry(); } }))));
     return;
   }
-  entryCls = saved ? saved.cls : entryCls;
+  entryCls = saved ? saved.cls : 0;
   var clsBox = h('div', { id: 'classes' });
   for (var i = 1; i <= CFG.CLASS_COUNT; i++) (function (i) {
     var b = h('button', { class: 'chip' + (i === entryCls ? ' sel' : ''), type: 'button', text: i + '반', 'data-cls': i, onclick: function () {
@@ -199,6 +199,7 @@ function renderEntry() {
   var err = h('div', { class: 'formerr', id: 'formerr' });
   function start() {
     var n = parseInt(num.value, 10), name = nm.value.trim();
+    if (!(entryCls >= 1 && entryCls <= CFG.CLASS_COUNT)) { err.textContent = '반을 먼저 골라요'; return; }
     if (!(n >= 1 && n <= 40)) { err.textContent = '번호는 1부터 40 사이로 써요'; num.focus(); return; }
     if (name.length < 2 || name.length > 10) { err.textContent = '이름은 2글자부터 10글자까지 써요'; nm.focus(); return; }
     P = { cls: entryCls, num: n, name: name }; LS.set('binq.profile', P); forceNew = false; loadProg(); renderMap();
@@ -721,7 +722,7 @@ function renderRank() {
   function isMe(r) { return r.num === P.num && r.name === P.name; }
   function row(r, i, me) {
     return h('div', { class: 'row' + (me ? ' me' : '') },
-      h('span', { class: 'n', text: String(r.rank || i + 1) }),
+      h('span', { class: 'n', text: (r.rank || i + 1) <= 3 ? '' : String(r.rank || i + 1) }),
       (r.rank || i + 1) <= 3 ? h('span', { class: 'med ' + ['g', 's', 'br'][(r.rank || i + 1) - 1], text: String(r.rank || i + 1) }) : h('span', { class: 'medsp' }),
       h('span', { class: 'nm', text: r.num + '번 ' + r.name + (me ? '  (나)' : '') }),
       h('span', { class: 'st2', text: '별 ' + (r.stars || 0) }),

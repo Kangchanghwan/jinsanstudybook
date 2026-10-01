@@ -99,7 +99,7 @@ h1,h2,.hd{font-family:'Black Han Sans','Jua',sans-serif;font-weight:400}
 .eq .sum.no{background:#ffe0dc}
 .eq .sum.big{background:#ffb3aa;color:#a00}
 /* banner */
-#banner{position:absolute;inset:0;display:none;z-index:50;align-items:center;justify-content:center;background:rgba(255,244,214,.6)}
+#banner{position:absolute;inset:0;display:none;z-index:50;align-items:center;justify-content:center;background:rgba(255,246,227,.93)}
 #banner.show{display:flex}
 #banner .b{font:230px 'Black Han Sans';color:var(--green);-webkit-text-stroke:12px var(--ink);paint-order:stroke fill;text-shadow:14px 14px 0 var(--ink);animation:slam .5s;transform:rotate(-4deg);text-align:center}
 #banner .s{font:60px 'Black Han Sans';display:block;-webkit-text-stroke:0;color:var(--ink);text-shadow:none;margin-top:6px}
