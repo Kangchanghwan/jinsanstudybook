@@ -3,6 +3,13 @@
 'use strict';
 var CFG = Object.assign({ API_URL: '', CLASS_COUNT: 8, GRADE: 2 }, window.GAME_CONFIG || {});
 var DEBUG = /[?&]debug=1/.test(location.search);
+// 디버그 전용: ?debug=1&api=<주소> 로 API 주소를 바꿔 모의 서버로 테스트할 수 있다.
+if (DEBUG) { var apiQ = /[?&]api=([^&]*)/.exec(location.search); if (apiQ) CFG.API_URL = decodeURIComponent(apiQ[1]); }
+// 선생님 설정 (settings 탭). 서버에서 못 받으면 기본값 유지.
+var CFG_DEF = { s1: 8, s2: 8, s3: 5, s4: 60 };
+CFG.stage = Object.assign({}, CFG_DEF);
+var CFG_RANGE = { s1: [1, 15], s2: [1, 20], s3: [1, 11], s4: [20, 180] };
+var CFG_KEY = { s1: 'stage1_count', s2: 'stage2_count', s3: 'stage3_count', s4: 'stage4_seconds' };
 var VALS = [8, 4, 2, 1];
 var $ = function (s, r) { return (r || document).querySelector(s); };
 var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -99,6 +106,7 @@ var sfx = {
   ng: function () { tone(200, 0.25, 'sawtooth', 0.1); tone(150, 0.25, 'sawtooth', 0.1, 0.12); },
   combo: function () { tone(660, 0.08, 'triangle', 0.14); tone(880, 0.08, 'triangle', 0.14, 0.08); tone(1100, 0.15, 'triangle', 0.14, 0.16); },
   tick: function () { tone(700, 0.1, 'square', 0.08); },
+  up: function () { tone(784, 0.1, 'triangle', 0.1); tone(1175, 0.16, 'triangle', 0.1, 0.09); },
   go: function () { tone(1000, 0.35, 'square', 0.1); },
   fanfare: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.25, 'triangle', 0.15, i * 0.12); }); }
 };
@@ -108,12 +116,13 @@ renderMute();
 document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.btn,.chip,.tab,.navbtn')) sfx.click(); }, true);
 
 /* ---------- 화면 전환 ---------- */
-var cleanups = [];
+var cleanups = [], curPage = '', miniMapEl = null, curIntroN = 0;
 function show(id) {
   cleanups.forEach(function (f) { try { f(); } catch (e) {} }); cleanups = [];
   $('#banner').classList.remove('show'); $('#countdown').classList.remove('show');
   $$('.conf').forEach(function (c) { c.remove(); });
   $$('.page').forEach(function (p) { p.classList.toggle('on', p.id === 'pg-' + id); });
+  curPage = id; miniMapEl = null; if (typeof RK !== 'undefined') RK.onPage(id);
   var pg = $('#pg-' + id); pg.innerHTML = ''; return pg;
 }
 function banner(title, sub, ms, cb) {
@@ -145,9 +154,152 @@ function loadProg() { prog = LS.get('binq.prog.' + pid(P), null) || { best: {} }
 function saveProg() { LS.set('binq.prog.' + pid(P), prog); }
 function totalScore() { var t = 0; for (var k in prog.best) t += prog.best[k].score; return t; }
 function totalStars() { var t = 0; for (var k in prog.best) t += prog.best[k].stars; return t; }
-function unlocked(n) { return DEBUG || n === 1 || !!prog.best[n - 1]; }
+function unlocked(n) { return true; }
 function deviceId() { var d = LS.get('binq.dev', null); if (!d) { d = 'd' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); LS.set('binq.dev', d); } return d; }
 function whoText() { return CFG.GRADE + '학년 ' + P.cls + '반 ' + P.num + '번'; }
+
+/* ---------- 설정(config) ---------- */
+function clampCfg(c) {
+  var out = {}, changed = false;
+  Object.keys(CFG_KEY).forEach(function (k) {
+    var n = Math.round(Number(c && c[CFG_KEY[k]]));
+    if (c && c[CFG_KEY[k]] !== '' && c[CFG_KEY[k]] != null && isFinite(n)) out[k] = Math.min(CFG_RANGE[k][1], Math.max(CFG_RANGE[k][0], n));
+  });
+  Object.keys(out).forEach(function (k) { if (CFG.stage[k] !== out[k]) { CFG.stage[k] = out[k]; changed = true; } });
+  return changed;
+}
+function applyConfig(c) {
+  if (!clampCfg(c)) return;
+  if (curPage === 'intro' && curIntroN) renderIntro(curIntroN);
+  else if (curPage === 'map' && P) renderMap(true);
+}
+function apiUrl(action, extra) { return CFG.API_URL + (CFG.API_URL.indexOf('?') < 0 ? '?' : '&') + 'action=' + action + (extra || ''); }
+function fetchConfig() {
+  if (!CFG.API_URL) return Promise.resolve();
+  return fetch(apiUrl('config')).then(function (r) { return r.json(); }).then(function (j) { if (j && j.ok && j.config) applyConfig(j.config); }).catch(function () {});
+}
+
+/* ---------- 준실시간 랭킹 폴러 (미니 랭킹 / 랭킹 화면 공용) ---------- */
+var RK = {
+  data: null, failed: false, inflight: false, fails: 0, timer: null, key: '', listeners: [],
+  myRank: null, delta: 0, deltaAt: 0, lastToast: {}, updatedAt: 0, started: false,
+  url: function () { return apiUrl('ranking', '&grade=' + CFG.GRADE + '&cls=' + P.cls + '&num=' + P.num + '&name=' + encodeURIComponent(P.name)); },
+  start: function () {
+    if (!CFG.API_URL || !P) return;
+    var k = pid(P);
+    if (RK.key !== k) { RK.data = null; RK.myRank = null; RK.delta = 0; RK.key = k; RK.failed = false; RK.fails = 0; }
+    if (!RK.started) { RK.started = true; RK.schedule(0); }
+    RK.render();
+  },
+  schedule: function (ms) {
+    clearTimeout(RK.timer);
+    if (ms == null) ms = Math.min(20000, 5000 * Math.pow(2, RK.fails)) * (RK.fails ? 1 : 1) + (RK.fails ? 0 : Math.random() * 1500);
+    RK.timer = setTimeout(RK.tick, ms);
+  },
+  tick: function () {
+    if (!RK.started) return;
+    if (document.hidden || RK.inflight || !P) { RK.schedule(); return; }
+    RK.poll().then(function () { RK.schedule(); });
+  },
+  now: function () { if (!RK.started || RK.inflight) return Promise.resolve(); return RK.poll().then(function () { RK.schedule(); }); },
+  poll: function () {
+    RK.inflight = true; var key = RK.key;
+    return fetch(RK.url()).then(function (r) { return r.json(); }).then(function (j) {
+      RK.inflight = false;
+      if (key !== RK.key) return;
+      if (!j || !j.ok) throw new Error('bad');
+      RK.fails = 0; RK.failed = false; RK.updatedAt = Date.now();
+      RK.ingest(j);
+    }).catch(function () { RK.inflight = false; RK.failed = true; RK.fails = Math.min(RK.fails + 1, 3); RK.fire(); });
+  },
+  ingest: function (j) {
+    var prev = RK.data, oldRank = RK.myRank, newRank = j.me ? j.me.rank : null;
+    RK.data = j;
+    if (j.config) applyConfig(j.config);
+    if (oldRank != null && newRank != null && newRank !== oldRank) {
+      RK.delta = oldRank - newRank; RK.deltaAt = Date.now();
+      if (RK.delta > 0) sfx.up();
+      if (RK.delta < 0) RK.overtake(prev, j, oldRank, newRank);
+    } else if (oldRank != null && newRank === oldRank && Date.now() - RK.deltaAt > 6000) RK.delta = 0;
+    RK.myRank = newRank;
+    RK.render(); RK.fire();
+  },
+  overtake: function (prev, j, oldRank, newRank) {
+    var seen = {};
+    function reg(arr) { (arr || []).forEach(function (r) { seen[r.num + '|' + r.name] = r.rank; }); }
+    reg(prev && prev.top); reg(prev && prev.ahead);
+    var cands = (j.top || []).concat(j.ahead || []), done = {};
+    for (var i = 0; i < cands.length; i++) {
+      var r = cands[i], k = r.num + '|' + r.name;
+      if (done[k] || r.rank >= newRank || (j.me && r.num === j.me.num && r.name === j.me.name)) continue;
+      done[k] = 1;
+      var was = seen[k];
+      if (was == null || was > oldRank || was >= newRank) {
+        var last = RK.lastToast[k] || 0;
+        if (Date.now() - last < 10000) return;
+        RK.lastToast[k] = Date.now(); RK.toast(r.name + '이(가) 추월!'); return;
+      }
+    }
+  },
+  toast: function (text) {
+    var t = $('#rkToast'); if (!t) return;
+    t.textContent = text; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+    clearTimeout(RK.toastT); RK.toastT = setTimeout(function () { t.classList.remove('show'); }, 1500);
+  },
+  onPage: function (id) {
+    var vis = !!CFG.API_URL && !!P && id !== 'entry' && id !== 'rank';
+    var b = $('#rkBadge'); if (b) b.style.display = vis ? '' : 'none';
+    var pop = $('#rkPop'); if (pop) pop.classList.remove('open');
+    if (CFG.API_URL && P && id !== 'entry') RK.start();
+    RK.render();
+  },
+  fire: function () { RK.listeners.forEach(function (f) { try { f(); } catch (e) {} }); },
+  top5: function () { return (RK.data && RK.data.top || []).slice(0, 5); },
+  rankText: function () {
+    if (!RK.data) return RK.failed ? '순위 확인 중' : '순위 불러오는 중';
+    return RK.myRank != null ? '내 순위 ' + RK.myRank + '위' : '내 순위 -';
+  },
+  deltaEl: function () {
+    if (RK.delta === 0 || Date.now() - RK.deltaAt > 6000) return null;
+    return h('span', { class: 'rkd ' + (RK.delta > 0 ? 'up' : 'down'), text: (RK.delta > 0 ? '▲' : '▼') + Math.abs(RK.delta) });
+  },
+  listEl: function (compact) {
+    var box = h('div', { class: compact ? 'rkrow5' : 'rklist' }), me = P;
+    var top = RK.top5();
+    if (!top.length) box.appendChild(h('span', { class: 'rkempty', text: RK.data ? '아직 기록이 없어요' : '불러오는 중...' }));
+    top.forEach(function (r) {
+      var mine = me && r.num === me.num && r.name === me.name;
+      box.appendChild(h('div', { class: 'rkit' + (mine ? ' me' : '') },
+        h('div', { class: 'rkl1' }, h('b', { text: r.rank + '위' }), h('span', { class: 'rkn', text: r.name })), h('span', { class: 'rks', text: fmt(r.total) + '점' })));
+    });
+    return box;
+  },
+  render: function () {
+    var b = $('#rkBadge');
+    if (b && b.style.display !== 'none') {
+      b.innerHTML = ''; b.appendChild(h('span', { class: 'rkt', text: RK.rankText() }));
+      var d = RK.deltaEl(); if (d) b.appendChild(d);
+      if (!d) { /* 지연 후 사라지게 */ }
+    }
+    var pop = $('#rkPop');
+    if (pop && pop.classList.contains('open')) RK.fillPop(pop);
+    if (miniMapEl && document.body.contains(miniMapEl)) RK.fillMap(miniMapEl);
+    clearTimeout(RK.dT);
+    if (RK.delta !== 0) RK.dT = setTimeout(RK.render, Math.max(200, 6100 - (Date.now() - RK.deltaAt)));
+  },
+  fillPop: function (pop) {
+    pop.innerHTML = ''; pop.appendChild(h('div', { class: 'rkh', text: P.cls + '반 실시간 순위' }));
+    pop.appendChild(RK.listEl(false));
+    pop.appendChild(h('div', { class: 'rkme', text: RK.rankText() + (RK.data && RK.data.me ? '  ' + fmt(RK.data.me.total) + '점' : '') }));
+  },
+  fillMap: function (el) {
+    el.innerHTML = '';
+    var d = RK.deltaEl();
+    el.appendChild(h('div', { class: 'rkh' }, '우리 반 실시간 순위', h('span', { class: 'rkmine', text: RK.rankText() }), d));
+    el.appendChild(RK.listEl(true));
+  }
+};
+document.addEventListener('visibilitychange', function () { if (!document.hidden && RK.started) RK.schedule(300); });
 
 /* ---------- 기록 전송 ---------- */
 function postRecord(rec) {
@@ -219,10 +371,12 @@ var STAGES = [
   { n: 1, name: '전구 켜기', ic: 'bulbIcon', sub: '전구로 수 만들기' },
   { n: 2, name: '카드 뒤집기', ic: 'cardIcon', sub: '점 카드로 수 만들기' },
   { n: 3, name: '나눗셈 사다리', ic: 'ladderIcon', sub: '2로 나누기' },
-  { n: 4, name: '타임어택 60초', ic: 'clockIcon', sub: '빠르게 변환하기' }
+  { n: 4, name: '타임어택', ic: 'clockIcon', sub: '빠르게 변환하기' }
 ];
-function renderMap() {
+function stageTitle(s) { return s.n === 4 ? '타임어택 ' + CFG.stage.s4 + '초' : s.name; }
+function renderMap(noFetch) {
   var pg = show('map');
+  if (noFetch !== true) fetchConfig();
   pg.appendChild(h('div', { class: 'card topbar' },
     h('span', { class: 'pill bl', text: whoText() }), h('b', { style: 'font-size:44px', text: P.name }), h('span', { style: 'flex:1' }),
     '총점 ', h('b', { style: 'font-size:54px', id: 'mapTotal', text: fmt(totalScore()) }), '점 ',
@@ -239,26 +393,31 @@ function renderMap() {
     var card = h('div', { class: 'card st' + (isCur ? ' cur' : '') + (!open ? ' lock' : ''), 'data-stage': s.n },
       isCur ? h('div', { class: 'hand', text: '여기 눌러요!' }) : null,
       h('span', { class: 'no', style: !open ? 'background:#ccc' : '', text: 'STAGE ' + s.n }),
-      icon(s.ic, 'ic'), h('h3', { text: s.name }), h('p', { text: cleared ? '최고 ' + fmt(best.score) + '점' : s.sub }),
+      icon(s.ic, 'ic'), h('h3', { text: stageTitle(s) }), h('p', { text: cleared ? '최고 ' + fmt(best.score) + '점' : s.sub }),
       starsEl(best ? best.stars : 0), btn);
     if (open) btn.addEventListener('click', function () { renderIntro(s.n); });
     row.appendChild(card);
   });
   pg.appendChild(row);
+  var mini = h('div', { class: 'card rkmap', id: 'rkMap' });
+  miniMapEl = mini; if (CFG.API_URL) { RK.fillMap(mini); } else mini.style.display = 'none';
   pg.appendChild(h('div', { class: 'maprow' },
+    h('div', { class: 'mapbtns' },
     h('button', { class: 'btn white', id: 'btnWho', text: '사람 바꾸기', onclick: function () { forceNew = false; renderEntry(); } }),
-    h('button', { class: 'btn blue', id: 'btnRank', text: '반 랭킹 보기', onclick: function () { renderRank(); } })));
+    h('button', { class: 'btn blue', id: 'btnRank', text: '반 랭킹 보기', onclick: function () { renderRank(); } })), mini));
 }
 
 /* ---------- 3. 방법 안내 ---------- */
-var INTRO = {
-  1: ['전구를 눌러서 켜고 꺼요', ['전구는 <b>8, 4, 2, 1</b> 자릿값을 가져요', '켠 전구는 <b>1</b>, 끈 전구는 <b>0</b>', '켠 전구의 자릿값을 더해서 목표 수를 만들어요'], '8문제'],
-  2: ['점 카드를 뒤집어요', ['카드에는 <b>8, 4, 2, 1</b>개의 점이 있어요', '앞면은 <b>1</b>, 뒷면은 <b>0</b>', '카드로 수를 만들고, 카드를 보고 수를 읽어요'], '8문제'],
-  3: ['2로 계속 나눠요', ['몫이 <b>0</b>이 될 때까지 2로 나눠요', '나머지를 <b>아래에서 위로</b> 읽어요', '4자리가 되도록 앞에 0을 채워요'], '5문제'],
-  4: ['60초 안에 많이 풀어요', ['이진수와 십진수를 빠르게 바꿔요', '연속으로 맞히면 <b>콤보</b> 점수가 올라요', '틀리면 콤보가 끊겨요'], '60초']
-};
+function introData(n) {
+  return {
+    1: ['전구를 눌러서 켜고 꺼요', ['전구는 <b>8, 4, 2, 1</b> 자릿값을 가져요', '켠 전구는 <b>1</b>, 끈 전구는 <b>0</b>', '켠 전구의 자릿값을 더해서 목표 수를 만들어요'], CFG.stage.s1 + '문제'],
+    2: ['점 카드를 뒤집어요', ['카드에는 <b>8, 4, 2, 1</b>개의 점이 있어요', '앞면은 <b>1</b>, 뒷면은 <b>0</b>', '카드로 수를 만들고, 카드를 보고 수를 읽어요'], CFG.stage.s2 + '문제'],
+    3: ['2로 계속 나눠요', ['몫이 <b>0</b>이 될 때까지 2로 나눠요', '나머지를 <b>아래에서 위로</b> 읽어요', '4자리가 되도록 앞에 0을 채워요'], CFG.stage.s3 + '문제'],
+    4: [CFG.stage.s4 + '초 안에 많이 풀어요', ['이진수와 십진수를 빠르게 바꿔요', '연속으로 맞히면 <b>콤보</b> 점수가 올라요', '틀리면 콤보가 끊겨요'], CFG.stage.s4 + '초']
+  }[n];
+}
 function renderIntro(n) {
-  var pg = show('intro'), s = STAGES[n - 1], d = INTRO[n];
+  var pg = show('intro'), s = STAGES[n - 1], d = introData(n); curIntroN = n;
   var ul = h('ul', {}); d[1].forEach(function (t) { ul.appendChild(h('li', { html: t })); });
   pg.appendChild(h('div', { style: 'text-align:center;margin-top:10px' }, h('span', { class: 'pill', style: 'font-size:48px', text: 'STAGE ' + n + '  ' + d[2] })));
   pg.appendChild(h('div', { class: 'card intro' }, icon(s.ic, 'big'), h('div', {}, h('h2', { text: d[0] }), ul)));
@@ -268,13 +427,13 @@ function renderIntro(n) {
 }
 
 /* ---------- 스테이지 공통 마무리 ---------- */
-var BASE = { 1: 60, 2: 80, 3: 150 };
+var BASE_PER_Q = { 1: 7.5, 2: 10, 3: 30 };
 function finishStage(n, S) {
   var time = Math.round(S.time), score, stars, bonus = 0;
   if (n === 4) {
-    score = S.pts; stars = score >= 1500 ? 3 : score >= 800 ? 2 : 1;
+    var k4 = S.sec / 60; score = S.pts; stars = score >= Math.round(1500 * k4) ? 3 : score >= Math.round(800 * k4) ? 2 : 1;
   } else {
-    bonus = Math.max(0, BASE[n] - time) * 2; score = S.pts + bonus;
+    bonus = Math.max(0, Math.round(BASE_PER_Q[n] * S.N) - time) * 2; score = S.pts + bonus;
     stars = S.wrong === 0 ? 3 : S.wrong <= 2 ? 2 : 1;
   }
   var prev = prog.best[n], isNew = !prev || score > prev.score;
@@ -330,7 +489,7 @@ function renderResult(n, R, rec) {
     setStatus(['wait', '기록 저장 중...']);
     sendRecord(rec).then(function (r) {
       if (!$('#saveStatus')) return;
-      if (r === 'ok') setStatus(['', '저장 완료']);
+      if (r === 'ok') { setStatus(['', '저장 완료']); RK.now(); }
       else if (r === 'off') setStatus(['off', '기록 서버 미연결 (이 기기에만 저장)']);
       else setStatus(['fail', '저장 실패']);
     });
@@ -340,8 +499,8 @@ function renderResult(n, R, rec) {
 
 /* ---------- Stage 1: 전구 켜기 ---------- */
 function startS1() {
-  var pg = show('s1'), targets = shuffle(range(1, 15)).slice(0, 8), qi = 0;
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0, extra: 0 };
+  var N1 = CFG.stage.s1, pg = show('s1'), targets = shuffle(range(1, 15)).slice(0, N1), qi = 0;
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, extra: 0, N: N1 };
   var bits, target, locked, qWrong, clicks, qStart, wasOver;
   var goal = h('span', { class: 'card goal hd', id: 'goal' });
   var bulbsBox = h('div', { class: 'bulbs', id: 'bulbs' });
@@ -375,7 +534,7 @@ function startS1() {
   function newQ() {
     target = targets[qi]; bits = [0, 0, 0, 0]; locked = false; qWrong = 0; clicks = 0; wasOver = false; qStart = performance.now();
     goal.textContent = target; hint.textContent = '전구를 눌러서 켜고 꺼요'; hint.className = 'hint';
-    dotsBox.replaceWith(dotsBox = dotsEl(8, qi)); pc.textContent = (qi + 1) + ' / 8';
+    dotsBox.replaceWith(dotsBox = dotsEl(N1, qi)); pc.textContent = (qi + 1) + ' / ' + N1;
     render();
   }
   function toggle(i) {
@@ -392,8 +551,8 @@ function startS1() {
   function solve() {
     locked = true; S.time += (performance.now() - qStart) / 1000;
     S.pts += qWrong === 0 ? 100 : 50; S.correct++; S.extra += Math.max(0, clicks - pop(target));
-    dotsBox.replaceWith(dotsBox = dotsEl(8, qi + 1));
-    banner('정답!', eqText(bits), 1500, function () { qi++; if (qi >= 8) finishStage(1, S); else newQ(); });
+    dotsBox.replaceWith(dotsBox = dotsEl(N1, qi + 1));
+    banner('정답!', eqText(bits), 1500, function () { qi++; if (qi >= N1) finishStage(1, S); else newQ(); });
   }
   newQ();
 }
@@ -411,8 +570,11 @@ function dotsSvg(n) {
   return s;
 }
 function startS2() {
-  var pg = show('s2'), targets = shuffle(range(1, 15)).slice(0, 8), types = shuffle(['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B']), qi = 0;
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0 };
+  var N2 = CFG.stage.s2, pg = show('s2'), targets = shuffle(range(1, 15)).slice(0, N2), qi = 0;
+  while (targets.length < N2) { var cand = 1 + Math.floor(Math.random() * 15); if (cand !== targets[targets.length - 1]) targets.push(cand); }
+  var typeArr = []; for (var ti = 0; ti < N2; ti++) typeArr.push(ti < Math.ceil(N2 / 2) ? 'A' : 'B');
+  var types = shuffle(typeArr);
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N2 };
   var bits, target, type, locked, qWrong, qStart;
   var dotsBox = h('div', { class: 'dots' }), pc = h('b', { class: 'hd' });
   pg.style.paddingTop = '50px';
@@ -438,7 +600,7 @@ function startS2() {
   }
   function newQ() {
     target = targets[qi]; type = types[qi]; locked = false; qWrong = 0; qStart = performance.now(); sol.textContent = ''; act.innerHTML = ''; act.style.display = ''; top.innerHTML = '';
-    dotsBox.replaceWith(dotsBox = dotsEl(8, qi)); pc.textContent = (qi + 1) + ' / 8';
+    dotsBox.replaceWith(dotsBox = dotsEl(N2, qi)); pc.textContent = (qi + 1) + ' / ' + N2;
     if (type === 'A') {
       bits = [0, 0, 0, 0];
       top.appendChild(h('div', { class: 'goalrow' }, h('span', { class: 't', text: '목표' }), h('span', { class: 'card goal hd', id: 'goal', text: String(target) }), h('span', { class: 't', text: '을 만들어라!' })));
@@ -461,8 +623,8 @@ function startS2() {
   function correct() {
     locked = true; S.time += (performance.now() - qStart) / 1000;
     S.pts += qWrong === 0 ? 100 : 50; S.correct++;
-    dotsBox.replaceWith(dotsBox = dotsEl(8, qi + 1));
-    banner('정답!', eqText(bits4(target)), 1500, function () { qi++; if (qi >= 8) finishStage(2, S); else newQ(); });
+    dotsBox.replaceWith(dotsBox = dotsEl(N2, qi + 1));
+    banner('정답!', eqText(bits4(target)), 1500, function () { qi++; if (qi >= N2) finishStage(2, S); else newQ(); });
   }
   function wrong() {
     qWrong++; S.wrong++; sfx.ng(); sol.textContent = '풀이  ' + eqText(bits4(target)); replay(cardsBox, 'shake');
@@ -484,8 +646,8 @@ function startS2() {
 
 /* ---------- Stage 3: 나눗셈 사다리 ---------- */
 function startS3() {
-  var pg = show('s3'), targets = shuffle(range(5, 15)).slice(0, 5), qi = 0;
-  var S = { pts: 0, correct: 0, wrong: 0, time: 0 };
+  var N3 = CFG.stage.s3, pg = show('s3'), targets = shuffle(range(5, 15)).slice(0, N3), qi = 0;
+  var S = { pts: 0, correct: 0, wrong: 0, time: 0, N: N3 };
   var N, ns, qs, rs, k, step, phase, readIdx, slots, qWrong, qStart, busy, usedR;
   pg.style.paddingTop = '50px';
   var goalBox = h('div', { class: 'goalrow' });
@@ -507,7 +669,7 @@ function startS3() {
     goalBox.innerHTML = '';
     goalBox.appendChild(h('span', { class: 'card goal hd', style: 'font-size:90px;padding:0 44px', text: String(N) }));
     goalBox.appendChild(h('span', { class: 't', style: 'font-size:80px', text: '을 이진수로 바꿔요' }));
-    dotsBox.replaceWith(dotsBox = dotsEl(5, qi)); pc.textContent = (qi + 1) + ' / 5';
+    dotsBox.replaceWith(dotsBox = dotsEl(N3, qi)); pc.textContent = (qi + 1) + ' / ' + N3;
     draw();
   }
   function draw() {
@@ -602,21 +764,21 @@ function startS3() {
   function finishQ() {
     busy = true; S.time += (performance.now() - qStart) / 1000;
     S.pts += qWrong === 0 ? 100 : 50; S.correct++;
-    dotsBox.replaceWith(dotsBox = dotsEl(5, qi + 1));
-    banner('정답!', N + ' = ' + slots.join('') + '(2)', 1700, function () { qi++; if (qi >= 5) finishStage(3, S); else newQ(); });
+    dotsBox.replaceWith(dotsBox = dotsEl(N3, qi + 1));
+    banner('정답!', N + ' = ' + slots.join('') + '(2)', 1700, function () { qi++; if (qi >= N3) finishStage(3, S); else newQ(); });
   }
   newQ();
 }
 
 /* ---------- Stage 4: 타임어택 ---------- */
 function startS4() {
-  var pg = show('s4'); pg.classList.remove('warn');
-  var S = { pts: 0, correct: 0, wrong: 0, time: 60, combo: 0 };
+  var SEC = CFG.stage.s4, pg = show('s4'); pg.classList.remove('warn');
+  var S = { pts: 0, correct: 0, wrong: 0, time: SEC, combo: 0, sec: SEC };
   var streak = 0, qType, ans, bits, locked = true, over = false, endAt = 0, buf = '';
   var score = h('span', { class: 'v', id: 'score', text: '0' }), okc = h('span', { class: 'v', id: 'okc', style: 'color:var(--green)', text: '0' }), ngc = h('span', { class: 'v', id: 'ngc', style: 'color:var(--red)', text: '0' });
   pg.appendChild(h('div', { class: 'hud' },
     h('div', { class: 'card' }, h('span', { text: '점수' }), score), h('div', { class: 'card' }, h('span', { text: '정답' }), okc), h('div', { class: 'card' }, h('span', { text: '오답' }), ngc)));
-  var tfill = h('i', { id: 'tfill' }), tbar = h('div', { class: 'tbar', id: 'tbar' }, tfill), tnum = h('div', { class: 'tnum', id: 'tnum', text: '60' });
+  var tfill = h('i', { id: 'tfill' }), tbar = h('div', { class: 'tbar', id: 'tbar' }, tfill), tnum = h('div', { class: 'tnum', id: 'tnum', text: String(SEC) });
   pg.appendChild(h('div', { class: 'timer' }, tbar, tnum));
   var combo = h('div', { class: 'combo dim', id: 'combo', text: 'COMBO' }), qlab = h('div', { class: 'lab', id: 'qlab' }), q = h('div', { class: 'q', id: 'q' }), fb = h('div', { class: 'fb', id: 'fb' });
   var padWrap = h('div', { class: 'padwrap', id: 'padwrap' });
@@ -677,7 +839,7 @@ function startS4() {
   }
   document.addEventListener('keydown', onKey); cleanups.push(function () { document.removeEventListener('keydown', onKey); });
   function tick() {
-    var left = Math.max(0, Math.ceil((endAt - performance.now()) / 1000)), frac = Math.max(0, (endAt - performance.now()) / 60000);
+    var left = Math.max(0, Math.ceil((endAt - performance.now()) / 1000)), frac = Math.max(0, (endAt - performance.now()) / (SEC * 1000));
     var w = left <= 10;
     tnum.textContent = left; tfill.style.width = (frac * 100) + '%';
     tnum.classList.toggle('warn', w); tbar.classList.toggle('warn', w); pg.classList.toggle('warn', w);
@@ -696,7 +858,7 @@ function startS4() {
     sfx.tick();
     if (c > 1) { c--; later(cdStep, 900); }
     else later(function () {
-      cd.classList.remove('show'); sfx.go(); endAt = performance.now() + 60000; newQ(); updHud();
+      cd.classList.remove('show'); sfx.go(); endAt = performance.now() + SEC * 1000; newQ(); updHud();
       var iv = setInterval(tick, 100); cleanups.push(function () { clearInterval(iv); }); tick();
     }, 900);
   })();
@@ -715,13 +877,14 @@ function renderRank() {
   });
   tabs.appendChild(upd);
   card.appendChild(tabs); card.appendChild(body); pg.appendChild(card);
+  pg.appendChild(h('a', { class: 'boardlink', id: 'boardLink', href: 'board.html?cls=' + P.cls, target: '_blank', rel: 'noopener', text: '선생님용 보드' }));
   pg.appendChild(h('div', { class: 'acts' },
-    h('button', { class: 'btn blue', id: 'btnRefresh', text: '새로고침', onclick: load }),
+    h('button', { class: 'btn blue', id: 'btnRefresh', text: '새로고침', onclick: function () { load(); } }),
     h('button', { class: 'btn', id: 'btnMap2', text: '스테이지 맵', onclick: renderMap })));
   var COLORS = ['#FF4B3E', '#FFC800', '#2F7BFF', '#22C55E', '#FF7EB6', '#9b7bff', '#ff9a3e', '#3ec9c9'];
   function isMe(r) { return r.num === P.num && r.name === P.name; }
   function row(r, i, me) {
-    return h('div', { class: 'row' + (me ? ' me' : '') },
+    return h('div', { class: 'row' + (me ? ' me' : ''), 'data-k': r.num + '|' + r.name },
       h('span', { class: 'n', text: (r.rank || i + 1) <= 3 ? '' : String(r.rank || i + 1) }),
       (r.rank || i + 1) <= 3 ? h('span', { class: 'med ' + ['g', 's', 'br'][(r.rank || i + 1) - 1], text: String(r.rank || i + 1) }) : h('span', { class: 'medsp' }),
       h('span', { class: 'nm', text: r.num + '번 ' + r.name + (me ? '  (나)' : '') }),
@@ -729,6 +892,20 @@ function renderRank() {
       h('span', { class: 'sc', text: fmt(r.total) }));
   }
   function draw() {
+    var oldPos = {};
+    $$('.row[data-k]', body).forEach(function (r) { oldPos[r.dataset.k] = r.getBoundingClientRect().top; });
+    drawInner();
+    $$('.row[data-k]', body).forEach(function (r) {
+      var o = oldPos[r.dataset.k];
+      if (o == null) return;
+      var dy = (o - r.getBoundingClientRect().top) / scale;
+      if (Math.abs(dy) < 2) return;
+      r.style.transition = 'none'; r.style.transform = 'translateY(' + dy + 'px)';
+      void r.offsetWidth; r.style.transition = 'transform .7s ease'; r.style.transform = '';
+      r.classList.add(dy > 0 ? 'moveup' : 'movedown'); setTimeout(function () { r.classList.remove('moveup', 'movedown'); }, 1200);
+    });
+  }
+  function drawInner() {
     body.innerHTML = '';
     if (!CFG.API_URL) {
       body.appendChild(h('div', { class: 'notice', id: 'offnotice', text: '기록 서버 미연결 - 이 기기에 저장된 내 기록만 보여요' }));
@@ -762,21 +939,29 @@ function renderRank() {
       }
     }
   }
+  function onData() {
+    if (!$('#rankbody')) return;
+    data = RK.data; failed = RK.failed; loading = false;
+    var d = RK.data && RK.data.updated ? new Date(RK.data.updated) : new Date();
+    updated = (d.getHours() + '').padStart(2, '0') + ':' + (d.getMinutes() + '').padStart(2, '0') + ':' + (d.getSeconds() + '').padStart(2, '0');
+    draw();
+  }
   function load() {
     if (!CFG.API_URL) { draw(); return; }
-    loading = true; draw();
-    var url = CFG.API_URL + (CFG.API_URL.indexOf('?') < 0 ? '?' : '&') + 'action=ranking&grade=' + CFG.GRADE + '&cls=' + P.cls + '&num=' + P.num + '&name=' + encodeURIComponent(P.name);
-    fetch(url).then(function (r) { return r.json(); }).then(function (j) {
-      if (!$('#rankbody')) return;
-      if (!j || !j.ok) throw new Error('bad');
-      data = j; failed = false; loading = false;
-      var d = j.updated ? new Date(j.updated) : new Date(); updated = (d.getHours() + '').padStart(2, '0') + ':' + (d.getMinutes() + '').padStart(2, '0') + ':' + (d.getSeconds() + '').padStart(2, '0'); draw();
-    }).catch(function () { if (!$('#rankbody')) return; failed = true; loading = false; draw(); });
+    if (!data && RK.data) onData();
+    else if (!data) { loading = true; draw(); }
+    RK.now();
   }
-  if (CFG.API_URL) { var iv = setInterval(load, 30000); cleanups.push(function () { clearInterval(iv); }); }
-  load();
+  if (CFG.API_URL) { RK.listeners.push(onData); cleanups.push(function () { var i = RK.listeners.indexOf(onData); if (i >= 0) RK.listeners.splice(i, 1); }); }
+  RK.start(); load();
 }
 
 /* ---------- 시작 ---------- */
+(function () {
+  var b = $('#rkBadge'), pop = $('#rkPop');
+  if (b) b.addEventListener('click', function (e) { e.stopPropagation(); var o = !pop.classList.contains('open'); pop.classList.toggle('open', o); if (o) RK.fillPop(pop); });
+  document.addEventListener('click', function (e) { if (pop && !e.target.closest('#rkPop,#rkBadge')) pop.classList.remove('open'); });
+})();
+fetchConfig();
 renderEntry();
 })();

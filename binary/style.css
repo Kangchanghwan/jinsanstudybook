@@ -245,3 +245,90 @@ button.rr.used{animation:none;box-shadow:none;background:#ddd;color:#888;cursor:
 /* 10개 반: 5열 2줄 */
 #classes{display:grid;grid-template-columns:repeat(5,150px);gap:14px 14px}
 #classes .chip{margin-right:0;min-width:0;width:150px}
+
+/* ===== v2: 전 스테이지 개방, 미니 랭킹, 랭킹 이동 ===== */
+.st{height:470px;padding:18px}
+.st .ic{width:130px;height:130px;margin:6px 0 0}
+.st h3{font-size:46px}
+.st p{margin-top:2px;font-size:28px;min-height:36px}
+.stars svg{width:56px;height:56px}
+.st .btn{height:72px;font-size:34px;margin-top:10px}
+.pagehead{font-size:64px;margin:12px 0 0}
+.pagesub{font-size:30px;margin-bottom:26px}
+.maprow{left:100px;right:100px;bottom:30px;justify-content:space-between;align-items:flex-end;gap:36px}
+.mapbtns{display:flex;flex-direction:column;gap:22px}
+.maprow .mapbtns .btn{width:430px;height:66px;font-size:34px}
+.rkmap{flex:1;height:176px;padding:8px 24px 12px;overflow:hidden}
+.rkh{font:32px 'Black Han Sans';display:flex;align-items:center;gap:18px;margin-bottom:8px;white-space:nowrap}
+.rkmine{background:var(--yellow);border:4px solid var(--ink);border-radius:30px;padding:0 18px;font-size:28px}
+.rkrow5{display:flex;gap:10px}
+.rkit{flex:1;min-width:0;border:4px solid var(--ink);border-radius:16px;background:#fffbe8;padding:2px 10px;font-size:26px;display:flex;flex-direction:column;line-height:1.25;white-space:nowrap}
+.rkit b{font:28px 'Black Han Sans';font-weight:400}
+.rkit .rkn{overflow:hidden;text-overflow:ellipsis}
+.rkit .rks{font-family:'Black Han Sans'}
+.rkit.me{background:#ffe9a3;box-shadow:3px 3px 0 var(--ink)}
+.rkempty{font-size:30px;color:#555}
+.rkd{font:32px 'Black Han Sans';border-radius:20px;padding:0 12px;border:4px solid var(--ink);color:#fff;animation:rkpop .6s}
+.rkd.up{background:var(--green)}.rkd.down{background:var(--red)}
+@keyframes rkpop{0%{transform:scale(.4) translateY(14px);opacity:0}60%{transform:scale(1.25) translateY(-6px);opacity:1}100%{transform:scale(1) translateY(0)}}
+/* 플레이 중: 왼쪽 위 순위 배지 (문제 영역 밖) */
+#rkBadge{position:absolute;left:20px;top:8px;z-index:98;height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;background:#fff;border:4px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);font:26px 'Black Han Sans','Jua',sans-serif;cursor:pointer;color:var(--ink)}
+#rkBadge:hover{background:var(--yellow)}
+#rkBadge .rkd{font-size:24px;padding:0 10px}
+#rkPop{position:absolute;left:20px;top:64px;z-index:98;width:520px;padding:14px 20px;background:#fff;border:6px solid var(--ink);border-radius:24px;box-shadow:8px 8px 0 var(--ink);display:none}
+#rkPop.open{display:block}
+#rkPop .rklist{display:flex;flex-direction:column;gap:6px}
+#rkPop .rkit{flex-direction:row;gap:14px;align-items:center;font-size:28px}
+#rkPop .rkit .rkn{flex:1}
+#rkPop .rkme{margin-top:10px;font:30px 'Black Han Sans';text-align:center}
+#rkToast{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:97;background:var(--red);color:#fff;border:5px solid var(--ink);border-radius:40px;padding:4px 34px;font:40px 'Black Han Sans';box-shadow:6px 6px 0 var(--ink);white-space:nowrap;display:none}
+#rkToast.show{display:block;animation:rkpop .4s}
+.row{position:relative}
+.row.moveup{background:#d8f7e2}
+.row.movedown{background:#ffe0dc}
+.boardlink{position:absolute;right:110px;top:78px;font:26px 'Black Han Sans';color:var(--ink);text-decoration:underline;padding:4px 10px}
+
+/* ===== v2: 선생님용 보드 ===== */
+#bnav{position:absolute;right:20px;top:14px;z-index:99;display:flex;gap:8px;background:#fff;border:4px solid var(--ink);border-radius:16px;padding:6px 8px;box-shadow:4px 4px 0 var(--ink)}
+#bdClasses{display:grid;grid-template-columns:repeat(5,260px);gap:30px;justify-content:center;margin-top:60px}
+#bdClasses .btn{width:260px;height:130px;font-size:60px;padding:0}
+.bdhead{display:flex;align-items:flex-end;justify-content:space-between;margin-top:-20px;padding-right:380px}
+.bdtitle{font-size:104px;line-height:1.1;color:var(--yellow);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill;text-shadow:8px 8px 0 var(--ink)}
+.bdinfo{text-align:right;font-family:'Black Han Sans';line-height:1.15}
+.bdclock{font-size:60px}
+.bdcount{font-size:44px;color:var(--blue)}
+.bdmain{display:flex;gap:40px;margin-top:20px}
+.bdlist{width:1060px;height:710px;padding:14px 30px}
+.bdlisthd{font:42px 'Black Han Sans';margin-bottom:8px}
+.bdrows{position:relative;height:630px}
+.bdrow{position:absolute;left:0;right:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 18px;border:4px solid var(--ink);border-radius:18px;background:#fffbe8;font-size:36px;transition:top .8s ease,opacity .6s}
+.bdrow .bdrank{width:64px;height:48px;font:36px/48px 'Black Han Sans';text-align:center;flex:none}
+.bdrow .bdrank.med{border:4px solid var(--ink);border-radius:50%;width:46px;height:46px;line-height:38px;font-size:28px}
+.bdrank.med.g{background:#FFC800}.bdrank.med.s{background:#cfd6de}.bdrank.med.br{background:#e08a4a}
+.bdrow .bdnm{flex:1;font-family:'Black Han Sans';overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bdrow .bdst{font-size:30px;color:#555;width:110px;text-align:right}
+.bdrow .bdsc{font:42px 'Black Han Sans';width:200px;text-align:right}
+.bdrow.flash{animation:bdflash 1.2s}
+.bdrow.fup{--fc:#b8f0c9}.bdrow.fdown{--fc:#ffc9c2}
+@keyframes bdflash{0%{background:var(--fc,#fff3a0);transform:scale(1.03)}100%{background:#fffbe8;transform:scale(1)}}
+.bdbars{flex:1;height:710px;padding:14px 26px}
+.bdbar{display:flex;align-items:center;gap:12px;height:58px;font-size:32px}
+.bdbar .cl{width:72px;font-family:'Black Han Sans'}
+.bdbar .tr{flex:1;height:42px}
+.bdbar .bar{height:100%;border:4px solid var(--ink);border-radius:14px;transition:width .8s ease;min-width:0;box-shadow:3px 3px 0 var(--ink)}
+.bdbar .av{width:96px;text-align:right;font:30px 'Black Han Sans'}
+.bdbar.me .cl{color:var(--red)}
+.bdbar.me .bar{outline:6px solid var(--red)}
+.bdbar.me{background:#fff3b0;border-radius:14px}
+.bdticker{position:absolute;left:100px;right:100px;bottom:30px;height:130px;padding:10px 20px;display:flex;align-items:center;gap:14px}
+.tklab{font:34px 'Black Han Sans';background:var(--red);color:#fff;border:4px solid var(--ink);border-radius:16px;padding:6px 14px;white-space:nowrap}
+.tkit{flex:1;min-width:0;border:4px solid var(--ink);border-radius:16px;padding:4px 10px;display:flex;flex-direction:column;font-size:24px;background:#fff;white-space:nowrap}
+.tkit span{overflow:hidden;text-overflow:ellipsis}
+.tkit b{font:26px 'Black Han Sans';font-weight:400}
+.tkit.mine{background:#ffe9a3}
+.tkit.fresh{animation:bdflash 1.4s}
+.tkempty{font-size:32px;color:#555}
+.bdstatus{position:absolute;left:100px;bottom:168px;font-size:26px;color:var(--red)}
+
+.rkl1{display:flex;gap:10px;align-items:baseline;min-width:0;overflow:hidden}
+#rkPop .rkl1{flex:1}
