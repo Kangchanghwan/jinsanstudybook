@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=1">
+<link rel="stylesheet" href="data.css?v=2">
 </head>
 <body>
   <header class="top">
@@ -27,8 +27,7 @@
       <li><b>5</b>의미 해석하기</li>
     </ol>
     <div class="all-sheet" id="allSheet" hidden>
-      <a class="btn btn-green" id="allSheetLink" target="_blank" rel="noopener">30개 데이터 전체를 구글 시트로 보기</a>
-      <a class="btn btn-yellow" id="copyLink" target="_blank" rel="noopener">내 드라이브에 사본 만들기</a>
+      <a class="btn btn-green" id="allSheetLink" target="_blank" rel="noopener">30개 데이터 한꺼번에 보기</a>
     </div>
   </section>
 
@@ -58,9 +57,9 @@ function render(site){
       <p class="meta">${esc(t.region)} · ${esc(t.period)}</p>
     </a>`).join('') || '<p class="loading">주제가 없어요</p>';
 }
-fetch('topics.json?v=1').then(r=>r.json()).then(d=>{
+fetch('topics.json?v=2').then(r=>r.json()).then(d=>{
   TOPICS = d.topics;
-  if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; document.getElementById('copyLink').href=d.copy_url; }
+  if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; }
   render('');
 });
 document.getElementById('filters').addEventListener('click',e=>{

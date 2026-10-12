@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=1">
+<link rel="stylesheet" href="data.css?v=2">
 </head>
 <body>
   <header class="top">
@@ -37,7 +37,7 @@ function parseCSV(text){
 }
 const id = new URLSearchParams(location.search).get('id') || '01';
 Promise.all([
-  fetch('topics.json?v=1').then(r=>r.json()),
+  fetch('topics.json?v=2').then(r=>r.json()),
   fetch(id+'.csv?v=1').then(r=>r.text())
 ]).then(([d,csv])=>{
   const t = d.topics.find(x=>x.id===id);
@@ -57,7 +57,7 @@ Promise.all([
       <p class="sub">${esc(t.title)}</p>
       <div class="actions">
         ${t.sheet_url?`<a class="btn btn-green" href="${esc(t.sheet_url)}" target="_blank" rel="noopener">구글 시트로 열기</a>`:''}
-        ${d.copy_url?`<a class="btn btn-yellow" href="${esc(d.copy_url)}" target="_blank" rel="noopener">내 드라이브에 사본 만들기</a>`:''}
+        ${t.copy_url?`<a class="btn btn-yellow" href="${esc(t.copy_url)}" target="_blank" rel="noopener">내 드라이브에 사본 만들기</a>`:''}
         <a class="btn btn-red" href="${t.id}.csv" download="${t.id}-${esc(t.title)}.csv">CSV 내려받기</a>
         <a class="btn btn-white" href="${esc(t.source_url)}" target="_blank" rel="noopener">원본 사이트 가기</a>
       </div>
@@ -65,7 +65,7 @@ Promise.all([
 
     <section class="panel">
       <h2>데이터 정보</h2>
-      <p class="hint">구글 시트는 보기 전용이에요. 직접 고치고 차트를 그리려면 <b>내 드라이브에 사본 만들기</b>를 누르세요.</p>
+      <p class="hint">구글 시트는 보기 전용이에요. 직접 고치고 차트를 그리려면 <b>내 드라이브에 사본 만들기</b>를 누르세요. 이 주제 데이터만 복사돼요.</p>
       <dl class="info">
         <dt>출처</dt><dd>${esc(t.site)} · ${esc(t.source_name)}</dd>
         <dt>제공기관</dt><dd>${esc(t.provider)}</dd>
