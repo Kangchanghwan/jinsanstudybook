@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>탐구 주제 | 데이터 탐구실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="data.css?v=1">
+</head>
+<body>
+  <header class="top">
+    <a class="home" href="./">&larr; 데이터 탐구실</a>
+  </header>
+
+  <main class="detail" id="detail"><p class="loading">불러오는 중...</p></main>
+
+  <footer>진산중학교 · 진산 스터디북</footer>
+
+<script>
+const SITE_CLASS = {'기상자료개방포털':'s-kma','KOSIS 국가통계포털':'s-kosis','공공데이터포털':'s-data'};
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  text = text.replace(/^\uFEFF/,'');
+  for (let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cur); cur=''; }
+    else if(c==='\n'){ row.push(cur.replace(/\r$/,'')); rows.push(row); row=[]; cur=''; }
+    else cur+=c;
+  }
+  if(cur!=='' || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.length>1 || r[0]!=='');
+}
+const id = new URLSearchParams(location.search).get('id') || '01';
+Promise.all([
+  fetch('topics.json?v=1').then(r=>r.json()),
+  fetch(id+'.csv?v=1').then(r=>r.text())
+]).then(([d,csv])=>{
+  const t = d.topics.find(x=>x.id===id);
+  const box = document.getElementById('detail');
+  if(!t){ box.innerHTML='<p class="loading">주제를 찾을 수 없어요</p>'; return; }
+  document.title = t.title + ' | 데이터 탐구실';
+  const rows = parseCSV(csv), head = rows[0]||[], body = rows.slice(1);
+  const blanks = body.reduce((n,r)=>n+head.filter((_,i)=>(r[i]??'')==='').length,0);
+  const PREVIEW = 15;
+  const idx = d.topics.findIndex(x=>x.id===id);
+  const prev = d.topics[idx-1], next = d.topics[idx+1];
+  box.innerHTML = `
+    <section class="q-card ${SITE_CLASS[t.site]||''}">
+      <span class="num big">${t.id}</span>
+      <span class="site">${esc(t.site)}</span>
+      <h1>${esc(t.question)}</h1>
+      <p class="sub">${esc(t.title)}</p>
+      <div class="actions">
+        ${t.sheet_url?`<a class="btn btn-green" href="${esc(t.sheet_url)}" target="_blank" rel="noopener">구글 시트로 열기</a>`:''}
+        ${d.copy_url?`<a class="btn btn-yellow" href="${esc(d.copy_url)}" target="_blank" rel="noopener">내 드라이브에 사본 만들기</a>`:''}
+        <a class="btn btn-red" href="${t.id}.csv" download="${t.id}-${esc(t.title)}.csv">CSV 내려받기</a>
+        <a class="btn btn-white" href="${esc(t.source_url)}" target="_blank" rel="noopener">원본 사이트 가기</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>데이터 정보</h2>
+      <p class="hint">구글 시트는 보기 전용이에요. 직접 고치고 차트를 그리려면 <b>내 드라이브에 사본 만들기</b>를 누르세요.</p>
+      <dl class="info">
+        <dt>출처</dt><dd>${esc(t.site)} · ${esc(t.source_name)}</dd>
+        <dt>제공기관</dt><dd>${esc(t.provider)}</dd>
+        <dt>지역</dt><dd>${esc(t.region)}</dd>
+        <dt>기간</dt><dd>${esc(t.period)}</dd>
+        <dt>크기</dt><dd>${body.length.toLocaleString()}행 × ${head.length}열${blanks?` · 빈칸 ${blanks.toLocaleString()}개`:''}</dd>
+        ${(t.notes_student||t.notes)?`<dt>참고</dt><dd>${esc(t.notes_student||t.notes)}</dd>`:''}
+        <dt>가져온 날</dt><dd>${esc(t.retrieved)}</dd>
+      </dl>
+    </section>
+
+    ${t.tasks&&t.tasks.length?`<section class="panel">
+      <h2>이렇게 탐구해 보자</h2>
+      <ol class="tasks">${t.tasks.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+    </section>`:''}
+
+    <section class="panel">
+      <h2>데이터 미리보기 <small>(처음 ${Math.min(PREVIEW,body.length)}행)</small></h2>
+      <div class="table-wrap"><table>
+        <thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${body.slice(0,PREVIEW).map(r=>`<tr>${head.map((_,i)=>{const v=r[i]??'';return `<td class="${v===''?'blank':''}">${esc(v)}</td>`}).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+    </section>
+
+    <nav class="pager">
+      ${prev?`<a class="btn btn-white" href="topic.html?id=${prev.id}">&larr; ${prev.id}</a>`:'<span></span>'}
+      ${next?`<a class="btn btn-white" href="topic.html?id=${next.id}">${next.id} &rarr;</a>`:'<span></span>'}
+    </nav>`;
+}).catch(()=>{ document.getElementById('detail').innerHTML='<p class="loading">데이터를 불러오지 못했어요</p>'; });
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>진산 스터디북 | 진산중학교 정보 수업</title>
-<meta name="description" content="진산중학교 정보 수업 자료 모음. micro:bit 코딩 수업 자료와 이진수 챌린지 게임.">
+<meta name="description" content="진산중학교 정보 수업 자료 모음. micro:bit 코딩 수업 자료, 이진수 챌린지 게임, 데이터 탐구실.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
@@ -27,12 +27,12 @@
   .card:hover{transform:translate(-3px,-3px);box-shadow:13px 13px 0 var(--ink)}
   .card:active{transform:translate(8px,8px);box-shadow:2px 2px 0 var(--ink)}
   .icon{width:120px;height:120px;border:5px solid var(--ink);border-radius:24px;display:grid;place-items:center}
-  .c-game .icon{background:var(--yellow)} .c-mb .icon{background:var(--blue)}
+  .c-game .icon{background:var(--yellow)} .c-mb .icon{background:var(--blue)} .c-data .icon{background:#9b6dff}
   .card h2{font-family:'Black Han Sans',sans-serif;font-size:48px;font-weight:400}
   .card p{font-size:24px;line-height:1.45}
   .go{margin-top:auto;align-self:flex-start;font-size:26px;padding:12px 28px;border:4px solid var(--ink);
     border-radius:16px;background:var(--red);color:#fff;box-shadow:4px 4px 0 var(--ink)}
-  .c-mb .go{background:var(--green)}
+  .c-mb .go{background:var(--green)} .c-data .go{background:#9b6dff}
   .new{position:absolute;margin:-52px 0 0 250px;background:var(--red);color:#fff;border:4px solid var(--ink);
     border-radius:12px;padding:4px 14px;font-size:22px;transform:rotate(8deg)}
   footer{margin-top:56px;font-size:20px;opacity:.7}
@@ -48,7 +48,6 @@
       <div class="icon" aria-hidden="true">
         <svg width="72" height="84" viewBox="0 0 72 84"><path d="M36 4C19 4 8 16 8 31c0 11 6 17 11 23 3 4 4 8 4 11h26c0-3 1-7 4-11 5-6 11-12 11-23C64 16 53 4 36 4Z" fill="#fff" stroke="#1d1d1f" stroke-width="5"/><rect x="23" y="66" width="26" height="8" rx="3" fill="#1d1d1f"/><rect x="27" y="76" width="18" height="6" rx="3" fill="#1d1d1f"/><text x="36" y="42" text-anchor="middle" font-family="Black Han Sans" font-size="26" fill="#1d1d1f">01</text></svg>
       </div>
-      <span class="new">NEW</span>
       <h2>이진수 챌린지</h2>
       <p>전구를 켜고, 카드를 뒤집고, 2로 나눠서<br>십진수와 이진수를 바꿔 보는 게임</p>
       <span class="go">게임 시작</span>
@@ -60,6 +59,15 @@
       <h2>micro:bit 수업</h2>
       <p>만보기, 나침반, 선풍기부터 마퀸 로봇 자동차까지<br>블록 코드와 만드는 방법</p>
       <span class="go">자료 보기</span>
+    </a>
+    <a class="card c-data" href="data/">
+      <div class="icon" aria-hidden="true">
+        <svg width="80" height="72" viewBox="0 0 80 72"><rect x="4" y="4" width="72" height="64" rx="10" fill="#fff" stroke="#1d1d1f" stroke-width="5"/><rect x="16" y="40" width="10" height="18" fill="#1d1d1f"/><rect x="35" y="28" width="10" height="30" fill="#1d1d1f"/><rect x="54" y="16" width="10" height="42" fill="#1d1d1f"/></svg>
+      </div>
+      <span class="new">NEW</span>
+      <h2>데이터 탐구실</h2>
+      <p>기온, 인구, 급식, 교통까지 진짜 데이터 30개로<br>질문하고 정리하고 차트로 해석하기</p>
+      <span class="go">탐구 시작</span>
     </a>
   </main>
 
