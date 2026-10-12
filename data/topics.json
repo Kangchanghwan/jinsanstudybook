@@ -1,5 +1,5 @@
 {
- "sheet_url": "https://docs.google.com/spreadsheets/d/1hRIFkQtqkXB2B4FUeYbUkDlBIr3ycDKQtJALWtUI0co/edit#gid=1546681650",
+ "sheet_url": "https://docs.google.com/spreadsheets/d/12-2B-cxxhQtOf_9PLsz2_sTMv0JtyOSCo4WhMGduUoE/edit",
  "topics": [
   {
    "id": "01",
@@ -958,6 +958,210 @@
    ],
    "sheet_url": "https://docs.google.com/spreadsheets/d/1y3ngTQ_x2qGtagmKwUXIfC0PQ7Tw_uvbtR0cD-dO83Y/edit",
    "copy_url": "https://docs.google.com/spreadsheets/d/1y3ngTQ_x2qGtagmKwUXIfC0PQ7Tw_uvbtR0cD-dO83Y/copy"
+  },
+  {
+   "id": "31",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 1681,
+   "columns": [
+    "날짜",
+    "요일",
+    "메뉴",
+    "에너지(kcal)",
+    "탄수화물(g)",
+    "단백질(g)",
+    "지방(g)",
+    "칼슘(mg)",
+    "철분(mg)",
+    "비타민C(mg)",
+    "에너지 권장섭취량(kcal)",
+    "비고"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "진산중 급식 영양 (일별)",
+   "question": "우리 학교 급식은 영양 기준에 맞을까?",
+   "source_name": "급식게시판 주간 식단표(학교급식 식재료 원산지 및 영양표시제, 주간식단 안내) 첨부파일",
+   "period": "2017-02-02~2026-10-16",
+   "notes": "급식게시판에 올라온 주간 식단표 xls/xlsx 375개에서 중식 메뉴와 영양량을 추출. 급식이 있었던 날 1681일. 영양량이 비어 있는 날 41일(식단표에 값이 없음). 2023-12-11 에너지 6633.3 등 원본 입력 오류로 보이는 값을 그대로 둠. 미리 올린 예정 식단표 값이라 NEIS 최종값과 조금 다를 수 있음.",
+   "notes_student": "학교 홈페이지 급식게시판에 올라온 주간 식단표에서 모은 점심 급식 영양 값이에요. 식단표에 값이 없는 날은 빈칸이고, 2023년 12월 11일 에너지 6633.3이나 지방이 100g이 넘는 날처럼 잘못 입력된 것으로 보이는 값도 원본 그대로 두었어요. 이런 이상한 값을 찾아 처리하는 것도 데이터 다듬기 연습이에요. 미리 안내한 식단표라 실제 급식과 조금 다를 수 있어요.",
+   "tasks": [
+    "정렬로 에너지가 가장 높은 날과 낮은 날을 찾고, 잘못 입력된 것 같은 값을 찾아 처리해 보자.",
+    "AVERAGE로 연도별 평균 에너지를 구해 꺾은선 차트로 그려 보자.",
+    "\"에너지 - 권장섭취량\" 열을 만들고 COUNTIF로 권장섭취량보다 높은 날이 며칠인지 세어 보자."
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1NHiusbryXo_qGfRDpk9Xmua0tWOIB6chqGOvWtazUGI/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1NHiusbryXo_qGfRDpk9Xmua0tWOIB6chqGOvWtazUGI/copy"
+  },
+  {
+   "id": "32",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 1138,
+   "columns": [
+    "날짜",
+    "요일",
+    "메뉴",
+    "알레르기 번호"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "2025년 진산중 급식 메뉴",
+   "question": "우리 학교 급식에 가장 자주 나오는 메뉴는?",
+   "source_name": "급식게시판 주간 식단표 첨부파일 (2025년)",
+   "period": "2025-01~2025-12",
+   "notes": "2025년 급식일의 메뉴를 한 줄에 하나씩 정리. 알레르기 번호는 식단표 표기 그대로(1.난류 2.우유 3.메밀 4.땅콩 5.대두 6.밀 7.고등어 8.게 9.새우 10.돼지고기 11.복숭아 12.토마토 13.아황산염 14.호두 15.닭고기 16.소고기 17.오징어 18.조개류 19.잣).",
+   "notes_student": "2025년에 나온 급식 메뉴를 한 줄에 하나씩 적었어요. 같은 메뉴라도 이름이 조금씩 다르게 적힌 경우가 있어요. 알레르기 번호는 1.난류 2.우유 3.메밀 4.땅콩 5.대두 6.밀 7.고등어 8.게 9.새우 10.돼지고기 11.복숭아 12.토마토 13.아황산염 14.호두 15.닭고기 16.소고기 17.오징어 18.조개류 19.잣이에요.",
+   "tasks": [
+    "COUNTIF로 메뉴별 등장 횟수를 세어 가장 자주 나온 메뉴 10개를 찾아보자.",
+    "배추김치, 깍두기 같은 김치 종류는 1년 동안 몇 번 나왔을까?",
+    "요일별로 자주 나오는 메뉴가 다른지 살펴보자."
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1Ar7RGbAERKUcS_NzBCpbvMs1CHiKf5MbnQGvonBQR7s/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1Ar7RGbAERKUcS_NzBCpbvMs1CHiKf5MbnQGvonBQR7s/copy"
+  },
+  {
+   "id": "33",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 10,
+   "columns": [
+    "연도",
+    "급식일수(일)",
+    "전체 메뉴 수(개)",
+    "1.난류",
+    "2.우유",
+    "3.메밀",
+    "4.땅콩",
+    "5.대두",
+    "6.밀",
+    "7.고등어",
+    "8.게",
+    "9.새우",
+    "10.돼지고기",
+    "11.복숭아",
+    "12.토마토",
+    "13.아황산염",
+    "14.호두",
+    "15.닭고기",
+    "16.소고기",
+    "17.오징어",
+    "18.조개류",
+    "19.잣"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "급식 속 알레르기 유발 식품",
+   "question": "급식에 가장 자주 들어가는 알레르기 식품은?",
+   "source_name": "급식게시판 주간 식단표 첨부파일의 알레르기 표시",
+   "period": "2017~2026",
+   "notes": "각 칸은 그해 해당 알레르기 번호가 표시된 메뉴 수. 2026년은 10월까지. 같은 메뉴라도 해마다 표시 방식이 달라(예: 김치에 조개류 표시 여부) 연도 간 차이가 크게 날 수 있음.",
+   "notes_student": "각 칸은 그해 급식 메뉴 중 그 알레르기 식품이 들어 있다고 표시된 메뉴의 수예요. 2026년은 10월까지만 있어요. 해마다 급식일수가 달라서 비교할 때는 전체 메뉴 수로 나눠 비율을 구해 보세요. 같은 메뉴라도 해마다 알레르기를 표시하는 방식이 달라서 숫자가 크게 바뀐 해가 있어요.",
+   "tasks": [
+    "2025년 행으로 알레르기 식품별 메뉴 수를 막대 차트로 그려 보자.",
+    "전체 메뉴 수로 나눠 대두와 밀이 들어간 메뉴의 비율을 구해 보자.",
+    "해마다 숫자가 크게 바뀐 식품을 찾아 이유를 생각해 보자."
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1Y4NzC98JwsB3MhLJFWSAFFbSmU6LGh0DFIuSwbaQRnU/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1Y4NzC98JwsB3MhLJFWSAFFbSmU6LGh0DFIuSwbaQRnU/copy"
+  },
+  {
+   "id": "34",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 11,
+   "columns": [
+    "재료 종류",
+    "국내산(회)",
+    "미국산(회)",
+    "캐나다산(회)",
+    "러시아산(회)",
+    "중국산(회)",
+    "기타 수입산(회)",
+    "합계(회)"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "급식 재료의 원산지",
+   "question": "우리 학교 급식 재료는 어디에서 올까?",
+   "source_name": "급식게시판 주간 식단표 첨부파일의 원산지 표시",
+   "period": "2017~2026",
+   "notes": "식단표 원산지 칸에 원산지가 적힌 횟수를 재료 종류별로 합침(같은 칸에 여러 원산지가 있으면 각각 셈). 원산지 표기 방식이 해마다 달라 대략적인 비교용. 기타 수입산=페루·베트남·호주·원양·수입 표기.",
+   "notes_student": "2017년부터 식단표 원산지 칸에 원산지가 적힌 횟수를 재료 종류별로 더했어요. 한 칸에 \"미국산, 캐나다산\"처럼 두 나라가 적혀 있으면 각각 셌어요. 표기 방식이 해마다 조금씩 달라서 대략적인 비교로 봐 주세요.",
+   "tasks": [
+    "재료 종류별로 국내산 비율(국내산 ÷ 합계)을 계산해 보자.",
+    "수입이 많은 재료 종류는 무엇이고 어느 나라에서 왔는지 막대 차트로 나타내 보자.",
+    "두부·콩은 왜 수입이 많을지 조사해 보자."
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1EA8LDpzlolElGPDvltVK91PSFvz_Js7SfzibvfpvykQ/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1EA8LDpzlolElGPDvltVK91PSFvz_Js7SfzibvfpvykQ/copy"
+  },
+  {
+   "id": "35",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 4,
+   "columns": [
+    "기간",
+    "식품비(원)",
+    "운영비 인건비 포함(원)",
+    "합계(원)",
+    "공산품·유제품·김치류(원)",
+    "농산물(원)",
+    "축산물(원)",
+    "수산물(원)"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "급식비 사용 내역",
+   "question": "우리 학교 급식비는 어디에 쓰일까?",
+   "source_name": "급식게시판 학교급식비 사용 비율(내역) 공개 게시글",
+   "period": "2023학년도~2025학년도 1학기",
+   "notes": "게시글 본문 표의 금액만 옮김(합계 검산 일치). 2025학년도 1학기 게시글의 비율(%) 행은 2024학년도 1학기와 같은 값이 적혀 있어 금액으로 계산한 비율과 다름. 학기 자료와 학년도 자료가 섞여 있음(2024학년도에 1학기 포함).",
+   "notes_student": "학교가 공개한 급식비 사용 금액이에요. 1학기 자료와 1년(학년도) 자료가 섞여 있으니 비교할 때 주의하세요. 원래 게시글의 2025학년도 1학기 비율은 금액으로 직접 계산한 값과 달라요. 비율은 금액으로 직접 계산해 보세요.",
+   "tasks": [
+    "기간별로 식품비 비율(식품비 ÷ 합계)을 직접 계산해 보자.",
+    "식품비를 공산품·유제품·김치류, 농산물, 축산물, 수산물로 나눈 원 차트를 그려 보자.",
+    "1학기 자료와 1년 자료를 비교할 때 무엇을 조심해야 할까?"
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1h6sB79uCjs2NTiz-CuGNba-TsEw_npFo0RGM7zf3Gx0/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1h6sB79uCjs2NTiz-CuGNba-TsEw_npFo0RGM7zf3Gx0/copy"
+  },
+  {
+   "id": "36",
+   "site": "진산중학교",
+   "provider": "진산중학교 급식마당",
+   "source_url": "https://jinsan.icems.kr/boardCnts/list.do?type=main&m=0804&s=jinsan&boardID=42841",
+   "region": "인천 진산중학교",
+   "rows": 129,
+   "columns": [
+    "조사 연도",
+    "문항 번호",
+    "질문",
+    "보기",
+    "응답자 수(명)",
+    "비율(%)"
+   ],
+   "retrieved": "2026-10-12",
+   "title": "식습관·급식 실태조사",
+   "question": "우리 학교 학생들의 식습관과 급식 만족도는 어떨까?",
+   "source_name": "급식게시판 학교급식 인식 및 실태조사 결과표(학생) xls (2024, 2026)",
+   "period": "2024, 2026",
+   "notes": "2024년(1~2학년, 응답 473명)과 2026년(1~3학년, 응답 537명) 학생 설문 결과표에서 문항·보기·응답자 수·비율을 옮김. 비율은 원본 값(응답자 전체 기준). 두 해의 문항 번호와 문장이 다름.",
+   "notes_student": "2024년(1~2학년 473명 응답)과 2026년(1~3학년 537명 응답) 우리 학교 학생 설문 결과예요. 두 해의 질문 번호와 문장이 조금 달라서 같은 내용의 질문끼리 찾아 비교해 보세요.",
+   "tasks": [
+    "같은 내용의 질문을 2024년과 2026년에서 찾아 비율을 비교하는 표를 만들어 보자.",
+    "\"음식을 버리는 가장 큰 이유\" 결과를 원 차트로 나타내 보자.",
+    "설문 결과를 바탕으로 우리 학교 급식을 더 좋게 만들 방법을 제안해 보자."
+   ],
+   "sheet_url": "https://docs.google.com/spreadsheets/d/1D2A2Bhn2mRb6rt-gJ3bDKiSxVOm_gxy4HsKUa8t9ckQ/edit",
+   "copy_url": "https://docs.google.com/spreadsheets/d/1D2A2Bhn2mRb6rt-gJ3bDKiSxVOm_gxy4HsKUa8t9ckQ/copy"
   }
  ]
 }

@@ -35,6 +35,7 @@ h1{font-family:'Black Han Sans',sans-serif;font-weight:400}
   font-family:'Black Han Sans',sans-serif;font-size:22px;background:var(--yellow)}
 .num.big{width:72px;height:72px;font-size:34px;border-radius:20px}
 .site{align-self:flex-start;font-size:16px;padding:3px 12px;border:3px solid var(--ink);border-radius:999px;color:#fff}
+.s-jinsan .site{background:var(--red)} .s-jinsan .num{background:#ffd6d7} .chip-jinsan{border-color:var(--red)}
 .s-kma .site{background:var(--blue)} .s-kosis .site{background:var(--purple)} .s-data .site{background:var(--green)}
 .s-kma .num{background:#cfe2ff} .s-kosis .num{background:#e6dbff} .s-data .num{background:#c9f2dc}
 .topic .num{position:absolute;top:-16px;right:18px}

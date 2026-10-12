@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=2">
+<link rel="stylesheet" href="data.css?v=3">
 </head>
 <body>
   <header class="top">
@@ -19,7 +19,7 @@
   <footer>진산중학교 · 진산 스터디북</footer>
 
 <script>
-const SITE_CLASS = {'기상자료개방포털':'s-kma','KOSIS 국가통계포털':'s-kosis','공공데이터포털':'s-data'};
+const SITE_CLASS = {'기상자료개방포털':'s-kma','KOSIS 국가통계포털':'s-kosis','공공데이터포털':'s-data','진산중학교':'s-jinsan'};
 function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function parseCSV(text){
   const rows=[]; let row=[], cur='', q=false;
@@ -37,7 +37,7 @@ function parseCSV(text){
 }
 const id = new URLSearchParams(location.search).get('id') || '01';
 Promise.all([
-  fetch('topics.json?v=2').then(r=>r.json()),
+  fetch('topics.json?v=3').then(r=>r.json()),
   fetch(id+'.csv?v=1').then(r=>r.text())
 ]).then(([d,csv])=>{
   const t = d.topics.find(x=>x.id===id);
