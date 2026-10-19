@@ -60,7 +60,7 @@ function render(site){
       <p class="meta">${esc(t.region)} · ${esc(t.period)}</p>
     </a>`).join('') || '<p class="loading">주제가 없어요</p>';
 }
-fetch('topics.json?v=4').then(r=>r.json()).then(d=>{
+fetch('topics.json?v=5').then(r=>r.json()).then(d=>{
   TOPICS = d.topics;
   if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; }
   render('');
