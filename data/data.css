@@ -67,3 +67,5 @@ footer{margin-top:48px;font-size:18px;opacity:.7;text-align:center}
 @media (max-width:600px){.info{grid-template-columns:1fr}.info dt{margin-top:6px}}
 .hint{font-size:19px;background:#fff6e3;border:3px dashed var(--ink);border-radius:14px;padding:10px 14px;margin-bottom:14px}
 .all-sheet{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+
+.checklist li b{display:inline-block;min-width:110px;margin-right:6px;padding:0 8px;background:var(--yellow);border:2px solid var(--ink);border-radius:8px;font-weight:400;text-align:center}

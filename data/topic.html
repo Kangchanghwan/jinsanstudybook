@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=3">
+<link rel="stylesheet" href="data.css?v=4">
 </head>
 <body>
   <header class="top">
@@ -37,8 +37,8 @@ function parseCSV(text){
 }
 const id = new URLSearchParams(location.search).get('id') || '01';
 Promise.all([
-  fetch('topics.json?v=3').then(r=>r.json()),
-  fetch(id+'.csv?v=1').then(r=>r.text())
+  fetch('topics.json?v=4').then(r=>r.json()),
+  fetch(id+'.csv?v=2').then(r=>r.text())
 ]).then(([d,csv])=>{
   const t = d.topics.find(x=>x.id===id);
   const box = document.getElementById('detail');
@@ -65,7 +65,7 @@ Promise.all([
 
     <section class="panel">
       <h2>데이터 정보</h2>
-      <p class="hint">구글 시트는 보기 전용이에요. 직접 고치고 차트를 그리려면 <b>내 드라이브에 사본 만들기</b>를 누르세요. 이 주제 데이터만 복사돼요.</p>
+      <p class="hint">이 데이터는 원본 모양을 살려 두어서 바로 차트를 그리기 어려운 곳이 있어요. <b>내 드라이브에 사본 만들기</b>로 복사한 뒤 다듬어 보세요. 고치기 전 모습을 남기려면 시트를 하나 복제해 두고 작업하면 좋아요.</p>
       <dl class="info">
         <dt>출처</dt><dd>${esc(t.site)} · ${esc(t.source_name)}</dd>
         <dt>제공기관</dt><dd>${esc(t.provider)}</dd>
@@ -81,6 +81,19 @@ Promise.all([
       <h2>이렇게 탐구해 보자</h2>
       <ol class="tasks">${t.tasks.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
     </section>`:''}
+
+    <section class="panel">
+      <h2>보고서에 꼭 들어갈 것</h2>
+      <ol class="tasks checklist">
+        <li><b>문제 정의</b> 이 주제의 질문을 내 말로 다시 쓰고, 왜 중요한지 적기</li>
+        <li><b>데이터 수집</b> 출처(사이트, 데이터 이름, 제공기관, 주소) 적기</li>
+        <li><b>데이터 구분</b> 질문에 필요한 행과 열만 고르고, 뺀 것과 이유 적기</li>
+        <li><b>데이터 다듬기</b> 빈칸, 이상한 값, 단위 글자, 합계·평균 행, 다르게 적힌 이름 등을 어떻게 고쳤는지 고치기 전과 후를 함께 적기</li>
+        <li><b>구조화</b> 다듬은 데이터를 표와 차트(꺾은선, 막대, 원, 분산형 중 목적에 맞는 것)로 나타내기</li>
+        <li><b>해석</b> 차트에서 보이는 변화와 두 데이터 사이의 관계를 설명하기</li>
+        <li><b>해결 방법</b> 데이터를 근거로 사회 문제를 해결할 방법 제안하기</li>
+      </ol>
+    </section>
 
     <section class="panel">
       <h2>데이터 미리보기 <small>(처음 ${Math.min(PREVIEW,body.length)}행)</small></h2>

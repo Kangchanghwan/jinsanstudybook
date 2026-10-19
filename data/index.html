@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>데이터 탐구실 | 진산 스터디북</title>
-<meta name="description" content="기상자료개방포털, KOSIS, 공공데이터포털에서 모은 30개 탐구 데이터. 구글 시트로 열어 정리하고 차트로 해석해 보세요.">
+<meta name="description" content="기상자료개방포털, KOSIS, 공공데이터포털에서 모은 28개 탐구 데이터. 원본 모양 그대로 열어 다듬고, 차트로 나타내고, 관계를 해석해 보세요.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=3">
+<link rel="stylesheet" href="data.css?v=4">
 </head>
 <body>
   <header class="top">
@@ -20,11 +20,13 @@
     <h1>데이터 탐구실</h1>
     <p class="lead">궁금한 질문을 하나 고르고, 진짜 데이터로 답을 찾아 보세요</p>
     <ol class="steps">
-      <li><b>1</b>질문 고르기</li>
-      <li><b>2</b>데이터 열기</li>
-      <li><b>3</b>다듬고 정리하기</li>
-      <li><b>4</b>차트로 나타내기</li>
-      <li><b>5</b>의미 해석하기</li>
+      <li><b>1</b>질문 정하기</li>
+      <li><b>2</b>데이터 열고 출처 적기</li>
+      <li><b>3</b>필요한 데이터 고르기</li>
+      <li><b>4</b>데이터 다듬기</li>
+      <li><b>5</b>표·차트로 나타내기</li>
+      <li><b>6</b>관계 해석하기</li>
+      <li><b>7</b>해결 방법 제안하기</li>
     </ol>
     <div class="all-sheet" id="allSheet" hidden>
       <a class="btn btn-green" id="allSheetLink" target="_blank" rel="noopener">전체 데이터 한꺼번에 보기</a>
@@ -58,7 +60,7 @@ function render(site){
       <p class="meta">${esc(t.region)} · ${esc(t.period)}</p>
     </a>`).join('') || '<p class="loading">주제가 없어요</p>';
 }
-fetch('topics.json?v=3').then(r=>r.json()).then(d=>{
+fetch('topics.json?v=4').then(r=>r.json()).then(d=>{
   TOPICS = d.topics;
   if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; }
   render('');
