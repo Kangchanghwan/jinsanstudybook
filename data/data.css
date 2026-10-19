@@ -69,3 +69,5 @@ footer{margin-top:48px;font-size:18px;opacity:.7;text-align:center}
 .all-sheet{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 
 .checklist li b{display:inline-block;min-width:110px;margin-right:6px;padding:0 8px;background:var(--yellow);border:2px solid var(--ink);border-radius:8px;font-weight:400;text-align:center}
+
+[hidden]{display:none!important}
