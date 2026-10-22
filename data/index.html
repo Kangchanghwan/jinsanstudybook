@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>데이터 탐구실 | 진산 스터디북</title>
-<meta name="description" content="기상자료개방포털, KOSIS, 공공데이터포털에서 모은 탐구 데이터. 원본 모양 그대로 열어 다듬고, 차트로 나타내고, 관계를 해석해 보세요.">
+<title>데이터 탐구실 설문 | 진산 스터디북</title>
+<meta name="description" content="2학년 정보 데이터와 문제 해결: 스마트폰 사용과 수면 습관 설문">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=5">
+<link rel="stylesheet" href="data.css?v=6">
 </head>
 <body>
   <header class="top">
@@ -18,59 +18,84 @@
   <section class="hero">
     <span class="badge">데이터와 문제 해결</span>
     <h1>데이터 탐구실</h1>
-    <p class="lead">궁금한 질문을 하나 고르고, 진짜 데이터로 답을 찾아 보세요</p>
+    <p class="lead">스마트폰 사용 시간은 우리의 수면 시간에 영향을 미칠까?</p>
     <ol class="steps">
-      <li><b>1</b>질문 정하기</li>
-      <li><b>2</b>데이터 열고 출처 적기</li>
-      <li><b>3</b>필요한 데이터 고르기</li>
-      <li><b>4</b>데이터 다듬기</li>
-      <li><b>5</b>표·차트로 나타내기</li>
-      <li><b>6</b>관계 해석하기</li>
-      <li><b>7</b>해결 방법 제안하기</li>
+      <li><b>1</b>반·번호·이름 쓰기</li>
+      <li><b>2</b>설문하기 (4문항)</li>
+      <li><b>3</b>제출 확인하기</li>
     </ol>
-    <div class="all-sheet" id="allSheet" hidden>
-      <a class="btn btn-green" id="allSheetLink" target="_blank" rel="noopener">전체 데이터 한꺼번에 보기</a>
-    </div>
   </section>
 
-  <nav class="filters" id="filters">
-    <button class="chip on" data-site="">전체</button>
-    <button class="chip" data-site="기상자료개방포털">기상자료개방포털</button>
-    <button class="chip" data-site="KOSIS 국가통계포털">KOSIS 국가통계포털</button>
-    <button class="chip" data-site="공공데이터포털">공공데이터포털</button>
-    <button class="chip chip-jinsan" data-site="진산중학교">우리 학교 (진산중)</button>
-  </nav>
+  <main class="survey" id="app">
+    <section class="panel" id="closed" hidden>
+      <h2>설문이 끝났어요</h2>
+      <p class="big">11월 11일에 설문을 마감했어요. 참여해 줘서 고마워요!</p>
+    </section>
 
-  <main class="topic-grid" id="grid"><p class="loading">불러오는 중...</p></main>
+    <section class="panel" id="entry">
+      <h2>나는 누구일까요?</h2>
+      <label class="lbl">반</label>
+      <div class="chips" id="clsBox"></div>
+      <label class="lbl">번호</label>
+      <div class="chips nums" id="numBox"></div>
+      <label class="lbl" for="nm">이름</label>
+      <input class="field" id="nm" maxlength="10" placeholder="이름" autocomplete="off">
+      <p class="err" id="err"></p>
+      <div class="actions">
+        <button class="btn btn-yellow" id="go" type="button">설문하러 가기</button>
+        <button class="btn btn-white" id="chk" type="button">제출 확인</button>
+      </div>
+      <p class="result" id="result"></p>
+      <p class="hint small">설문지가 새 창으로 열려요. 반·번호·이름은 미리 채워져 있으니 확인만 하고 질문 4개에 답해 주세요. 응답은 이름과 번호를 뺀 뒤 수업 자료로만 써요.</p>
+    </section>
+  </main>
 
-  <footer>진산중학교 · 진산 스터디북 · 데이터 출처는 각 주제 페이지에 적혀 있어요</footer>
+  <footer>진산중학교 · 진산 스터디북 · 설문 마감 11월 11일</footer>
 
+<script src="config.js?v=1"></script>
 <script>
-const SITE_CLASS = {'기상자료개방포털':'s-kma','KOSIS 국가통계포털':'s-kosis','공공데이터포털':'s-data','진산중학교':'s-jinsan'};
-let TOPICS = [];
-function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function render(site){
-  const g = document.getElementById('grid');
-  const list = TOPICS.filter(t=>!site || t.site===site);
-  g.innerHTML = list.map(t=>`
-    <a class="topic ${SITE_CLASS[t.site]||''}" href="topic.html?id=${t.id}">
-      <span class="num">${t.id}</span>
-      <span class="site">${esc(t.site)}</span>
-      <h2>${esc(t.question)}</h2>
-      <p class="meta">${esc(t.region)} · ${esc(t.period)}</p>
-    </a>`).join('') || '<p class="loading">주제가 없어요</p>';
+(function(){
+var C = window.SURVEY_CONFIG, LSK = 'jsurvey.profile';
+var $ = function(id){ return document.getElementById(id); };
+var prof = {}; try { prof = JSON.parse(localStorage.getItem(LSK) || '{}'); } catch(e) {}
+var cls = prof.cls || 0, num = prof.num || 0;
+function chips(box, n, suffix, cur, pick){
+  box.innerHTML = '';
+  for (var i = 1; i <= n; i++) (function(i){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (i === cur ? ' on' : '');
+    b.textContent = i + suffix; b.onclick = function(){ pick(i); [].forEach.call(box.children, function(x, j){ x.classList.toggle('on', j + 1 === i); }); };
+    box.appendChild(b);
+  })(i);
 }
-fetch('topics.json?v=6').then(r=>r.json()).then(d=>{
-  TOPICS = d.topics;
-  if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; }
-  if (new Set(TOPICS.map(t=>t.site)).size < 2) document.getElementById('filters').hidden = true;
-  render('');
-});
-document.getElementById('filters').addEventListener('click',e=>{
-  const b=e.target.closest('.chip'); if(!b) return;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
-  render(b.dataset.site);
-});
+chips($('clsBox'), C.CLASS_COUNT, '반', cls, function(i){ cls = i; });
+chips($('numBox'), C.MAX_NUM, '', num, function(i){ num = i; });
+$('nm').value = prof.name || '';
+function valid(){
+  var name = $('nm').value.trim(); $('err').textContent = '';
+  if (!cls) { $('err').textContent = '반을 먼저 골라요'; return null; }
+  if (!num) { $('err').textContent = '번호를 골라요'; return null; }
+  if (name.length < 2) { $('err').textContent = '이름을 2글자 이상 써요'; $('nm').focus(); return null; }
+  var p = { cls: cls, num: num, name: name }; localStorage.setItem(LSK, JSON.stringify(p)); return p;
+}
+function closed(){ $('entry').hidden = true; $('closed').hidden = false; }
+if (new Date() > new Date(C.DEADLINE)) closed();
+fetch(C.API_URL + '?action=status').then(function(r){ return r.json(); }).then(function(s){ if (s.ok && !s.open) closed(); }).catch(function(){});
+$('go').onclick = function(){
+  var p = valid(); if (!p) return;
+  var E = C.ENTRIES;
+  var url = C.FORM_URL + '?usp=pp_url&' + E.cls + '=' + encodeURIComponent(p.cls + '반') + '&' + E.num + '=' + p.num + '&' + E.name + '=' + encodeURIComponent(p.name);
+  window.open(url, '_blank', 'noopener');
+  $('result').className = 'result'; $('result').textContent = '설문을 다 냈으면 "제출 확인"을 눌러 보세요.';
+};
+$('chk').onclick = function(){
+  var p = valid(); if (!p) return;
+  var r = $('result'); r.className = 'result'; r.textContent = '확인하는 중...';
+  fetch(C.API_URL + '?action=check&cls=' + p.cls + '&num=' + p.num).then(function(x){ return x.json(); }).then(function(j){
+    if (j.submitted) { r.className = 'result ok'; r.textContent = C.GRADE + '학년 ' + p.cls + '반 ' + p.num + '번 제출 완료! (' + j.at + ')'; }
+    else { r.className = 'result no'; r.textContent = '아직 제출 기록이 없어요. 설문지 마지막에 "제출"을 눌렀는지 확인해요.'; }
+  }).catch(function(){ r.className = 'result no'; r.textContent = '확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.'; });
+};
+})();
 </script>
 </body>
 </html>
