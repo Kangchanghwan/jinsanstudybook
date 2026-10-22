@@ -23,7 +23,7 @@
       <li><b>1</b>우리 반 고르기</li>
       <li><b>2</b>설문하기 (4문항)</li>
       <li><b>3</b>우리 반 결과 보기</li>
-      <li><b>4</b>엑셀로 내려받아 다듬기</li>
+      <li><b>4</b>사본 만들어 다듬기</li>
     </ol>
   </section>
 
@@ -48,9 +48,9 @@
       <p class="big" id="resHint">반을 고르면 우리 반 결과가 열려요.</p>
       <div class="actions">
         <a class="btn btn-green" id="viewSheet" target="_blank" rel="noopener">결과 시트 보기 (읽기 전용)</a>
-        <a class="btn btn-red" id="dlSheet">엑셀 파일로 내려받기</a>
+        <a class="btn btn-red" id="dlSheet" target="_blank" rel="noopener">내 사본 만들기</a>
       </div>
-      <p class="hint small">친구들이 제출할 때마다 결과 시트에 한 줄씩 쌓여요. 엑셀 파일로 내려받아 이상한 데이터를 찾아 지워 보세요. 우리 반 응답만 들어 있어요.</p>
+      <p class="hint small">친구들이 제출할 때마다 결과 시트에 한 줄씩 쌓여요. "내 사본 만들기"를 누르면 내 구글 드라이브에 우리 반 결과가 복사돼요. 사본에서는 마음껏 고칠 수 있으니 이상한 데이터를 찾아 지워 보세요. (구글 계정 로그인이 필요해요)</p>
     </section>
   </main>
 
@@ -73,7 +73,7 @@ function update(){
   g.href = C.FORM_URL + '?usp=pp_url&' + C.ENTRY_CLS + '=' + encodeURIComponent(cls + '반');
   g.textContent = cls + '반 설문하러 가기';
   v.href = 'https://docs.google.com/spreadsheets/d/' + id + '/edit?usp=sharing';
-  d.href = 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx';
+  d.href = 'https://docs.google.com/spreadsheets/d/' + id + '/copy';
   $('resHint').textContent = C.GRADE + '학년 ' + cls + '반 결과예요.';
 }
 var box = $('clsBox');
