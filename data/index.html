@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>데이터 탐구실 | 진산 스터디북</title>
-<meta name="description" content="기상자료개방포털, KOSIS, 공공데이터포털에서 모은 28개 탐구 데이터. 원본 모양 그대로 열어 다듬고, 차트로 나타내고, 관계를 해석해 보세요.">
+<meta name="description" content="기상자료개방포털, KOSIS, 공공데이터포털에서 모은 탐구 데이터. 원본 모양 그대로 열어 다듬고, 차트로 나타내고, 관계를 해석해 보세요.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
@@ -60,9 +60,10 @@ function render(site){
       <p class="meta">${esc(t.region)} · ${esc(t.period)}</p>
     </a>`).join('') || '<p class="loading">주제가 없어요</p>';
 }
-fetch('topics.json?v=5').then(r=>r.json()).then(d=>{
+fetch('topics.json?v=6').then(r=>r.json()).then(d=>{
   TOPICS = d.topics;
   if (d.sheet_url){ document.getElementById('allSheet').hidden=false; document.getElementById('allSheetLink').href=d.sheet_url; }
+  if (new Set(TOPICS.map(t=>t.site)).size < 2) document.getElementById('filters').hidden = true;
   render('');
 });
 document.getElementById('filters').addEventListener('click',e=>{
