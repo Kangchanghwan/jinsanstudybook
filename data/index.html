@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>데이터 탐구실 설문 | 진산 스터디북</title>
-<meta name="description" content="2학년 정보 데이터와 문제 해결: 스마트폰 사용과 수면 습관 무기명 설문">
+<title>데이터 탐구실 | 진산 스터디북</title>
+<meta name="description" content="2학년 정보 데이터와 문제 해결: 설문으로 데이터를 수집하고 관리하기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="data.css?v=8">
+<link rel="stylesheet" href="data.css?v=9">
+<script>/* 예전 주소(?cls=)로 들어오면 수면 설문으로 */ (function(){var c=new URLSearchParams(location.search).get('cls'); if(c) location.replace('sleep/?cls='+encodeURIComponent(c));})();</script>
 </head>
 <body>
   <header class="top">
@@ -16,76 +17,29 @@
   </header>
 
   <section class="hero">
-    <span class="badge">데이터와 문제 해결</span>
+    <span class="badge">Ⅱ. 데이터 · 02. 데이터와 문제 해결</span>
     <h1>데이터 탐구실</h1>
-    <p class="lead">스마트폰 사용 시간은 우리의 수면 시간에 영향을 미칠까?</p>
-    <ol class="steps">
-      <li><b>1</b>우리 반 고르기</li>
-      <li><b>2</b>설문하기 (4문항)</li>
-      <li><b>3</b>우리 반 결과 보기</li>
-      <li><b>4</b>엑셀로 내려받아 다듬기</li>
-    </ol>
+    <p class="lead">설문으로 데이터를 모으고, 우리 반 결과를 바로 확인해요</p>
   </section>
 
-  <main class="survey">
-    <section class="panel">
-      <h2>우리 반을 골라요</h2>
-      <div class="chips" id="clsBox"></div>
-      <p class="err" id="err"></p>
-    </section>
+  <section class="sec">
+    <h2 class="sec-title"><b>1</b>문제 해결을 위해 데이터를 수집하고 관리하기</h2>
+    <div class="acts">
+      <a class="act a1" href="subject/">
+        <span class="pg">74쪽 더 알아보기</span>
+        <h3>학생들이 가장 좋아하는 과목은?</h3>
+        <p>설문지로 데이터를 모으고, 우리 반 응답을 원그래프로 실시간 확인해요.</p>
+        <span class="go">설문하고 그래프 보기</span>
+      </a>
+      <a class="act a2" href="sleep/">
+        <span class="pg">75쪽 활동</span>
+        <h3>스마트폰 사용과 수면 습관</h3>
+        <p>무기명 설문에 참여하고, 우리 반 결과 시트를 엑셀로 내려받아 다듬어요.</p>
+        <span class="go">설문하고 데이터 다듬기</span>
+      </a>
+    </div>
+  </section>
 
-    <section class="panel" id="surveyBox">
-      <h2>설문하기</h2>
-      <p class="big" id="closedMsg" hidden>11월 11일에 설문을 마감했어요. 참여해 줘서 고마워요!</p>
-      <div class="actions" id="goBox">
-        <a class="btn btn-yellow" id="go" target="_blank" rel="noopener">설문하러 가기</a>
-      </div>
-      <p class="hint small">이름을 쓰지 않는 무기명 설문이에요. 설문지가 새 창으로 열리고 반은 미리 골라져 있어요. 질문 4개에 답하고 "제출"을 눌러요. 딱 맞는 보기가 없으면 직접 써도 돼요.</p>
-    </section>
-
-    <section class="panel">
-      <h2>우리 반 설문 결과</h2>
-      <p class="big" id="resHint">반을 고르면 우리 반 결과가 열려요.</p>
-      <div class="actions">
-        <a class="btn btn-green" id="viewSheet" target="_blank" rel="noopener">결과 시트 보기 (읽기 전용)</a>
-        <a class="btn btn-red" id="dlSheet">엑셀 파일로 내려받기</a>
-      </div>
-      <p class="hint small">친구들이 제출할 때마다 결과 시트에 한 줄씩 쌓여요. 엑셀 파일로 내려받아 이상한 데이터를 찾아 지워 보세요. 우리 반 응답만 들어 있어요.</p>
-    </section>
-  </main>
-
-  <footer>진산중학교 · 진산 스터디북 · 설문 마감 11월 11일</footer>
-
-<script src="config.js?v=4"></script>
-<script>
-(function(){
-var C = window.SURVEY_CONFIG, LSK = 'jsurvey.cls';
-var $ = function(id){ return document.getElementById(id); };
-var cls = parseInt(new URLSearchParams(location.search).get('cls'), 10);
-if (!(cls >= 1 && cls <= C.CLASS_COUNT)) cls = parseInt(localStorage.getItem(LSK), 10) || 0;
-var closed = new Date() > new Date(C.DEADLINE);
-function closeUI(){ closed = true; $('closedMsg').hidden = false; $('goBox').hidden = true; }
-function update(){
-  var id = cls ? C.CLASS_SHEETS[cls - 1] : '', v = $('viewSheet'), d = $('dlSheet'), g = $('go');
-  [v, d, g].forEach(function(a){ a.classList.toggle('off', !cls); if (!cls) a.removeAttribute('href'); });
-  if (!cls) return;
-  localStorage.setItem(LSK, cls);
-  g.href = C.FORM_URL + '?usp=pp_url&' + C.ENTRY_CLS + '=' + encodeURIComponent(cls + '반');
-  g.textContent = cls + '반 설문하러 가기';
-  v.href = 'https://docs.google.com/spreadsheets/d/' + id + '/edit?usp=sharing';
-  d.href = 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx';
-  $('resHint').textContent = C.GRADE + '학년 ' + cls + '반 결과예요.';
-}
-var box = $('clsBox');
-for (var i = 1; i <= C.CLASS_COUNT; i++) (function(i){
-  var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (i === cls ? ' on' : ''); b.textContent = i + '반';
-  b.onclick = function(){ cls = i; [].forEach.call(box.children, function(x, j){ x.classList.toggle('on', j + 1 === i); }); update(); };
-  box.appendChild(b);
-})(i);
-update();
-if (closed) closeUI();
-fetch(C.API_URL).then(function(r){ return r.json(); }).then(function(s){ if (s.ok && !s.open) closeUI(); }).catch(function(){});
-})();
-</script>
+  <footer>진산중학교 · 진산 스터디북</footer>
 </body>
 </html>

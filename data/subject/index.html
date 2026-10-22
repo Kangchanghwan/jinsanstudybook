@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>좋아하는 과목 설문 | 데이터 탐구실</title>
+<meta name="description" content="정보 74쪽 더 알아보기: 학생들이 가장 좋아하는 과목은? 반별 실시간 원그래프">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../data.css?v=9">
+</head>
+<body>
+  <header class="top">
+    <a class="home" href="../">&larr; 데이터 탐구실</a>
+  </header>
+
+  <section class="hero">
+    <span class="badge">74쪽 더 알아보기 · 온라인 협업 플랫폼으로 데이터 수집과 공유</span>
+    <h1>좋아하는 과목</h1>
+    <p class="lead">학생들이 가장 좋아하는 과목은?</p>
+    <ol class="steps">
+      <li><b>1</b>우리 반 고르기</li>
+      <li><b>2</b>설문지에 답하기</li>
+      <li><b>3</b>우리 반 그래프 보기</li>
+    </ol>
+  </section>
+
+  <main class="survey">
+    <section class="panel">
+      <h2>우리 반을 골라요</h2>
+      <div class="chips" id="clsBox"></div>
+    </section>
+
+    <section class="panel">
+      <h2>설문하기</h2>
+      <div class="actions">
+        <a class="btn btn-yellow off" id="go" target="_blank" rel="noopener">설문하러 가기</a>
+      </div>
+      <p class="hint small">설문지가 새 창으로 열리고 반은 미리 골라져 있어요. 좋아하는 과목 하나를 골라 "제출"을 누르면 아래 그래프에 바로 반영돼요. 이름은 쓰지 않아요.</p>
+    </section>
+
+    <section class="panel" id="chartBox">
+      <div class="rtop">
+        <h2 id="rTitle">우리 반 결과</h2>
+        <span class="live" id="live"></span>
+      </div>
+      <p class="big" id="rCount">반을 고르면 우리 반 그래프가 나와요.</p>
+      <div class="pie-wrap">
+        <svg id="pie" viewBox="0 0 200 200" role="img" aria-label="좋아하는 과목 원그래프"></svg>
+        <ul class="pie-legend" id="legend"></ul>
+      </div>
+      <div class="actions">
+        <button class="btn btn-white" id="fs" type="button">크게 보기</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>진산중학교 · 진산 스터디북 · 정보 74쪽</footer>
+
+<script src="../config.js?v=5"></script>
+<script>
+(function(){
+var C = window.SURVEY_CONFIG, LSK = 'jsurvey.cls', $ = function(id){ return document.getElementById(id); };
+var COLORS = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6'];   // 구글 설문지 요약 그래프 색
+var SUBJ = ['국어', '영어', '수학', '사회', '과학', '정보'];
+var cls = parseInt(new URLSearchParams(location.search).get('cls'), 10);
+if (!(cls >= 1 && cls <= C.CLASS_COUNT)) cls = parseInt(localStorage.getItem(LSK), 10) || 0;
+var timer = null, last = '';
+
+function svgEl(t, a){ var e = document.createElementNS('http://www.w3.org/2000/svg', t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+function draw(d){
+  var svg = $('pie'), lg = $('legend'); svg.innerHTML = ''; lg.innerHTML = '';
+  var total = d ? d.total : 0, cx = 100, cy = 100, r = 96, a0 = -Math.PI / 2;
+  if (!total) {
+    svg.appendChild(svgEl('circle', { cx: cx, cy: cy, r: r, fill: '#e8e3d6' }));
+    var t = svgEl('text', { x: cx, y: cy + 6, 'text-anchor': 'middle', 'font-size': 15, fill: '#777' }); t.textContent = '아직 응답이 없어요'; svg.appendChild(t);
+  }
+  SUBJ.forEach(function(s, i){
+    var n = d ? (d.counts[s] || 0) : 0, frac = total ? n / total : 0;
+    var li = document.createElement('li'); li.innerHTML = '<i style="background:' + COLORS[i] + '"></i>' + s + '<span>' + n + '명' + (total ? ' · ' + (frac * 100).toFixed(1) + '%' : '') + '</span>'; lg.appendChild(li);
+    if (!n) return;
+    var a1 = a0 + frac * 2 * Math.PI;
+    if (frac >= 0.9999) svg.appendChild(svgEl('circle', { cx: cx, cy: cy, r: r, fill: COLORS[i] }));
+    else {
+      var p = 'M' + cx + ',' + cy + ' L' + (cx + r * Math.cos(a0)) + ',' + (cy + r * Math.sin(a0)) +
+              ' A' + r + ',' + r + ' 0 ' + (frac > 0.5 ? 1 : 0) + ' 1 ' + (cx + r * Math.cos(a1)) + ',' + (cy + r * Math.sin(a1)) + ' Z';
+      svg.appendChild(svgEl('path', { d: p, fill: COLORS[i], stroke: '#fff', 'stroke-width': 1.5 }));
+    }
+    if (frac >= 0.05) {
+      var am = (a0 + a1) / 2, lr = frac >= 0.9999 ? 0 : r * 0.62;
+      var tx = svgEl('text', { x: cx + lr * Math.cos(am), y: cy + lr * Math.sin(am) + 5, 'text-anchor': 'middle', 'font-size': 13, fill: '#fff', 'font-family': 'system-ui,sans-serif' });
+      tx.textContent = (frac * 100).toFixed(1) + '%'; svg.appendChild(tx);
+    }
+    a0 = a1;
+  });
+}
+function load(){
+  if (!cls || document.hidden) return;
+  var want = cls;
+  fetch(C.API_URL + '?action=subject&cls=' + want + '&t=' + Date.now()).then(function(r){ return r.json(); }).then(function(d){
+    if (want !== cls || !d.ok) return;
+    $('rCount').textContent = '응답 ' + d.total + '개';
+    var key = JSON.stringify(d.counts); if (key !== last) { last = key; draw(d); }
+    $('live').innerHTML = '<i></i>실시간 · ' + new Date().toLocaleTimeString('ko-KR');
+  }).catch(function(){ $('live').textContent = '연결이 잠깐 끊겼어요. 다시 시도할게요.'; });
+}
+function update(){
+  var g = $('go');
+  g.classList.toggle('off', !cls);
+  if (!cls) { draw(null); return; }
+  localStorage.setItem(LSK, cls);
+  g.href = C.SUBJ_FORM_URL + '?usp=pp_url&' + C.SUBJ_ENTRY_CLS + '=' + encodeURIComponent(cls + '반');
+  g.textContent = cls + '반 설문하러 가기';
+  $('rTitle').textContent = C.GRADE + '학년 ' + cls + '반 결과';
+  $('rCount').textContent = '불러오는 중...';
+  last = ''; draw(null); load();
+  clearInterval(timer); timer = setInterval(load, 5000);
+}
+var box = $('clsBox');
+for (var i = 1; i <= C.CLASS_COUNT; i++) (function(i){
+  var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (i === cls ? ' on' : ''); b.textContent = i + '반';
+  b.onclick = function(){ cls = i; [].forEach.call(box.children, function(x, j){ x.classList.toggle('on', j + 1 === i); }); history.replaceState(null, '', '?cls=' + i); update(); };
+  box.appendChild(b);
+})(i);
+document.addEventListener('visibilitychange', load);
+$('fs').onclick = function(){ var el = $('chartBox'); if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen(); };
+update();
+})();
+</script>
+</body>
+</html>

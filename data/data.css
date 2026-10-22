@@ -110,3 +110,30 @@ button.btn{font-family:inherit;cursor:pointer}
 .names span{border:3px solid var(--ink);border-radius:12px;padding:6px 14px;font-size:22px;background:#c9f2dc}
 .names span.x{background:var(--yellow)}
 .bigcount{font-family:'Black Han Sans',sans-serif;font-size:clamp(60px,10vw,140px);line-height:1}
+/* 2026-10-22 탐구실 허브 */
+.sec{width:100%;max-width:1000px}
+.sec-title{display:flex;align-items:center;gap:14px;font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:clamp(26px,3.6vw,38px);margin:8px 0 22px}
+.sec-title b{display:grid;place-items:center;min-width:54px;height:54px;padding:0 10px;border:4px solid var(--ink);border-radius:16px;background:var(--purple);color:#fff;font-weight:400;font-size:26px}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}
+.act{display:flex;flex-direction:column;gap:10px;text-decoration:none;background:#fff;border:5px solid var(--ink);border-radius:26px;padding:26px 28px 24px;box-shadow:9px 9px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.act:hover{transform:translate(-3px,-3px);box-shadow:12px 12px 0 var(--ink)}
+.act:active{transform:translate(6px,6px);box-shadow:3px 3px 0 var(--ink)}
+.act .pg{align-self:flex-start;font-size:18px;padding:4px 14px;border:3px solid var(--ink);border-radius:999px;background:var(--yellow)}
+.act h3{font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:32px;line-height:1.25}
+.act p{font-size:21px;line-height:1.45}
+.act .go{margin-top:auto;align-self:flex-start;font-size:22px;padding:10px 24px;border:4px solid var(--ink);border-radius:14px;color:#fff;box-shadow:4px 4px 0 var(--ink)}
+.act.a1 .go{background:var(--blue)} .act.a2 .go{background:var(--red)}
+/* 과목 원그래프 */
+.pie-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:28px 40px;margin-top:10px}
+.pie-wrap svg{width:min(420px,100%);height:auto}
+.pie-legend{list-style:none;display:flex;flex-direction:column;gap:12px;font-size:24px}
+.pie-legend i{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:-3px;margin-right:10px}
+.pie-legend span{opacity:.6;font-size:20px;margin-left:8px}
+.rtop{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px}
+.live{font-size:18px;opacity:.7}
+.live i{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--green);margin-right:6px;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+.panel:fullscreen{display:flex;flex-direction:column;justify-content:center;padding:40px 60px;border:0;border-radius:0}
+.panel:fullscreen .pie-wrap svg{width:min(70vh,55vw)}
+.panel:fullscreen .pie-legend{font-size:36px}
+.panel:fullscreen h2{font-size:52px}
