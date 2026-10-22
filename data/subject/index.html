@@ -58,12 +58,12 @@
 
   <footer>진산중학교 · 진산 스터디북 · 정보 74쪽</footer>
 
-<script src="../config.js?v=5"></script>
+<script src="../config.js?v=6"></script>
 <script>
 (function(){
 var C = window.SURVEY_CONFIG, LSK = 'jsurvey.cls', $ = function(id){ return document.getElementById(id); };
 var COLORS = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6'];   // 구글 설문지 요약 그래프 색
-var SUBJ = ['국어', '영어', '수학', '사회', '과학', '정보'];
+var SUBJ = ['국어', '영어', '수학', '과학'];
 var cls = parseInt(new URLSearchParams(location.search).get('cls'), 10);
 if (!(cls >= 1 && cls <= C.CLASS_COUNT)) cls = parseInt(localStorage.getItem(LSK), 10) || 0;
 var timer = null, last = '';
@@ -100,6 +100,7 @@ function load(){
   var want = cls;
   fetch(C.API_URL + '?action=subject&cls=' + want + '&t=' + Date.now()).then(function(r){ return r.json(); }).then(function(d){
     if (want !== cls || !d.ok) return;
+    if (d.subjects) SUBJ = d.subjects;
     $('rCount').textContent = '응답 ' + d.total + '개';
     var key = JSON.stringify(d.counts); if (key !== last) { last = key; draw(d); }
     $('live').innerHTML = '<i></i>실시간 · ' + new Date().toLocaleTimeString('ko-KR');
